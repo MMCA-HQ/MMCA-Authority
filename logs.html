@@ -184,11 +184,43 @@
 </script>
 </body>
 <script>
-    // قفل أمان الهيئة - MMCA
     let pass = prompt("الرجاء إدخال الرمز السري للوصول إلى السجلات:");
     if (pass !== "رئيس_2026") { 
         alert("دخول غير مصرح!");
         window.location.href = "index.html";
     }
 </script>
-</html>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+    authDomain: "mmca-authority.firebaseapp.com",
+    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
+    projectId: "mmca-authority",
+    storageBucket: "mmca-authority.firebasestorage.app",
+    messagingSenderId: "105278081999",
+    appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function saveData() {
+    const rules = document.getElementById('rulesInput').value;
+    const dates = document.getElementById('datesInput').value;
+
+    db.ref('authority_data').set({
+      rules: rules,
+      dates: dates,
+      lastUpdated: new Date().toLocaleString()
+    }).then(() => {
+      alert("تم التحديث بنجاح! البيانات الآن أصبحت عالمية.");
+    }).catch((error) => {
+      alert("خطأ في الاتصال: " + error.message);
+    });
+  }
+</script></html>
+
