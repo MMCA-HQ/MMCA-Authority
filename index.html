@@ -93,6 +93,58 @@
         alert('تم التقديم'); sync();
     };
     window.onload = sync;
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+<script>
+  // 2. إعدادات الاتصال (نفس الإعدادات السابقة)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+    authDomain: "mmca-authority.firebaseapp.com",
+    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
+    projectId: "mmca-authority",
+    storageBucket: "mmca-authority.firebasestorage.app",
+    messagingSenderId: "105278081999",
+    appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
+  };
+
+  // 3. تهيئة Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // 4. وظيفة "الاستماع" للبيانات وتحديث الصفحة تلقائياً
+  // هذا الكود يراقب أي تغيير في Firebase ويحدث الشاشة فوراً
+  db.ref('authority_data').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      // تأكد أن الـ IDs التالية مطابقة لما هو موجود في الـ HTML الخاص بك
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      const datesDisplay = document.getElementById('datesDisplay');
+
+      if(rulesDisplay) rulesDisplay.innerText = data.rules;
+      if(datesDisplay) datesDisplay.innerText = data.dates;
+    }
+  });
+
+  // وظيفة إضافية لإرسال طلبات التقديم إلى السحاب (اختياري حالياً)
+  function submitApplication() {
+    const name = document.getElementById('applicantName').value;
+    const discord = document.getElementById('applicantDiscord').value;
+
+    if(name && discord) {
+        db.ref('applications').push({
+            name: name,
+            discord: discord,
+            status: 'قيد الانتظار',
+            timestamp: new Date().toLocaleString()
+        }).then(() => {
+            alert("تم إرسال طلبك إلى قيادة الهيئة بنجاح!");
+        });
+    } else {
+        alert("يرجى تعبئة كافة الحقول!");
+    }
+  }
 </script>
 </body>
+
 </html>
