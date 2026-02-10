@@ -191,38 +191,20 @@
     }
 </script>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src=""></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
-    authDomain: "mmca-authority.firebaseapp.com",
-    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
-    projectId: "mmca-authority",
-    storageBucket: "mmca-authority.firebasestorage.app",
-    messagingSenderId: "105278081999",
-    appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
-  };
+<script src=""></script>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+<script> const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", authDomain: "mmca-authority.firebaseapp.com", databaseURL: "", projectId: "mmca-authority", storageBucket: "mmca-authority.firebasestorage.app", messagingSenderId: "105278081999", appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba" };
 
-  function saveData() {
-    const rules = document.getElementById('rulesInput').value;
-    const dates = document.getElementById('datesInput').value;
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } const db = firebase.database();
 
-    db.ref('authority_data').set({
-      rules: rules,
-      dates: dates,
-      lastUpdated: new Date().toLocaleString()
-    }).then(() => {
-      alert("تم التحديث بنجاح! البيانات الآن أصبحت عالمية.");
-    }).catch((error) => {
-      alert("خطأ في الاتصال: " + error.message);
-    });
-  }
-</script>
-</html>
+function saveCond() { const rulesVal = document.getElementById('e_cond').value; db.ref('authority_data/rules').set(rulesVal).then(() => { alert("تمت المزامنة! اختفت كلمة null الآن."); }); }
+
+function saveItem(type) { const name = document.getElementById('c_name').value; const p1 = document.getElementById('c_p1').value; const p2 = document.getElementById('c_p2').value;
+
+} </script>
+
+</body> </html>
 
 
