@@ -183,4 +183,12 @@
     window.onload = renderLists;
 </script>
 </body>
+<script>
+    // قفل أمان الهيئة - MMCA
+    let pass = prompt("الرجاء إدخال الرمز السري للوصول إلى السجلات:");
+    if (pass !== "رئيس_2026") { 
+        alert("دخول غير مصرح!");
+        window.location.href = "index.html";
+    }
+</script>
 </html>
