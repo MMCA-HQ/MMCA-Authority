@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة المشرفين | دولة مارفل</title>
+    <style>
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; text-align: right; border-radius: 5px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
+        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
+        th { background: #1a1d12; color: var(--gold); }
+        .btn-link { background: var(--gold); color: #000; padding: 10px 15px; text-decoration: none; font-weight: bold; margin: 5px; display: inline-block; border-radius: 4px; }
+        .btn-correct { background: #3498db; color: #fff; }
+        .action-btn { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
+        .accept { background: #2ecc71; color: #000; }
+        .reject { background: #e74c3c; color: #fff; }
+        .survey-box { background: #000; padding: 15px; border: 1px dashed var(--army); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
+
+    <div class="panel">
+        <h2>مواعيد الدورات</h2>
+        <table id="schedAdmin">
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>إدارة طلبات القبول المبدئي</h2>
+        <table>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار</th></tr></thead>
+            <tbody id="admAcc"></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>رصد نتائج الاجتياز (للمقبولين فقط)</h2>
+        <table>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
+            <tbody id="admPass"></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>روابط الاختبارات</h2>
+        <div id="linksView"></div>
+    </div>
+
+    <div class="panel">
+        <h2>روابط التصحيح</h2>
+        <div id="correctLinksView"></div>
+    </div>
+
+    <div class="panel">
+        <h2>استبيانات الدورات</h2>
+        <div id="survView"></div>
+    </div>
+
+<script>
+    function load() {
+        const apps = JSON.parse(localStorage.getItem('m_apps') || '[]');
+        const courses = JSON.parse(localStorage.getItem('m_courses') || '[]');
+        const links = JSON.parse(localStorage.getItem('m_links') || '[]');
+        const cLinks = JSON.parse(localStorage.getItem('m_clinks') || '[]');
+        const survs = JSON.parse(localStorage.getItem('m_survs') || '[]');
+
+        document.querySelector('#schedAdmin tbody').innerHTML = courses.map(c => `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`).join('');
+        
+        document.getElementById('admAcc').innerHTML = apps.map((a, i) => `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
+            <button class="action-btn accept" onclick="upd(${i},'status','مقبول')">قبول</button>
+            <button class="action-btn reject" onclick="upd(${i},'status','مرفوض')">رفض</button>
+        </td></tr>`).join('');
+
+        document.getElementById('admPass').innerHTML = apps.map((a, i) => {
+            if(a.status !== 'مقبول') return ''; 
+            return `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
+                <button class="action-btn accept" onclick="upd(${i},'pass','اجتياز')">اجتياز</button>
+                <button class="action-btn reject" onclick="upd(${i},'pass','عدم اجتياز')">عدم اجتياز</button>
+                <span style="color:var(--gold)">[${a.pass}]</span>
+            </td></tr>`;
+        }).join('');
+
+        document.getElementById('linksView').innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="btn-link">${l.title}</a>`).join('');
+        document.getElementById('correctLinksView').innerHTML = cLinks.map(l => `<a href="${l.url}" target="_blank" class="btn-link btn-correct">${l.title}</a>`).join('');
+        document.getElementById('survView').innerHTML = survs.map(s => `<div class="survey-box"><b>${s.name}:</b><br>${s.content}</div>`).join('');
+    }
+
+    function upd(i, f, v) {
+        let apps = JSON.parse(localStorage.getItem('m_apps'));
+        apps[i][f] = v;
+        localStorage.setItem('m_apps', JSON.stringify(apps)); load();
+    }
+    window.onload = load;
+</script>
+</body>
+</html>

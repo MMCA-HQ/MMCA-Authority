@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بوابة المتقدمين | دولة مارفل</title>
+    <style>
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; text-align: center; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 20px; text-align: right; border-radius: 5px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
+        input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 8px 0; border-radius: 4px; }
+        .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #000; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
+        th { background: #1a1d12; color: var(--gold); }
+        .footer { margin-top: 50px; padding: 20px; border-top: 1px solid #222; color: #666; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <h1>هيئة تنظيم الدورات العسكرية - دولة مارفل</h1>
+
+    <div class="panel">
+        <h2>شروط الدورات</h2>
+        <div id="disp_cond"></div>
+    </div>
+
+    <div class="panel">
+        <h2>مواعيد الدورات</h2>
+        <table>
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody id="schedBody"></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>استمارة طلب الالتحاق</h2>
+        <form id="applyForm">
+            <input type="text" id="name" placeholder="الاسم الكامل" required>
+            <input type="text" id="code" placeholder="الكود العسكري" required>
+            <select id="courseSelect" onchange="updatePeriods()" required><option value="">-- اختر الدورة --</option></select>
+            <select id="periodSelect" required disabled><option value="">-- اختر الموعد --</option></select>
+            <button type="submit" class="btn-submit">إرسال الطلب الرسمي</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h2>نتائج القبول المبدئي</h2>
+        <table id="accTable">
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>نتائج اجتياز الدورات</h2>
+        <table id="passTable">
+            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="footer">جميع الحقوق محفوظة © 2026 - دولة مارفل</div>
+
+<script>
+    function sync() {
+        document.getElementById('disp_cond').innerHTML = localStorage.getItem('m_cond') || 'لا توجد شروط حالياً.';
+        const courses = JSON.parse(localStorage.getItem('m_courses') || '[]');
+        const apps = JSON.parse(localStorage.getItem('m_apps') || '[]');
+        
+        document.getElementById('schedBody').innerHTML = courses.map(c => `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`).join('');
+        const cSel = document.getElementById('courseSelect');
+        cSel.innerHTML = '<option value="">-- اختر الدورة --</option>' + courses.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+
+        document.querySelector('#accTable tbody').innerHTML = apps.map(a => `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${a.status}</td></tr>`).join('');
+        
+        // تعديل العرض ليظهر "اجتياز" أو "عدم اجتياز" فقط
+        document.querySelector('#passTable tbody').innerHTML = apps.filter(a => a.status === 'مقبول').map(a => `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><b>${a.pass}</b></td></tr>`).join('');
+    }
+
+    function updatePeriods() {
+        const selCourse = document.getElementById('courseSelect').value;
+        const courses = JSON.parse(localStorage.getItem('m_courses') || '[]');
+        const c = courses.find(x => x.name === selCourse);
+        const pSel = document.getElementById('periodSelect');
+        if(c) { pSel.innerHTML = `<option value="${c.p1}">فترة 1: ${c.p1}</option><option value="${c.p2}">فترة 2: ${c.p2}</option>`; pSel.disabled = false; }
+    }
+
+    document.getElementById('applyForm').onsubmit = function(e) {
+        e.preventDefault();
+        const apps = JSON.parse(localStorage.getItem('m_apps') || '[]');
+        apps.push({ name: document.getElementById('name').value, code: document.getElementById('code').value, course: document.getElementById('courseSelect').value, status: 'تحت المراجعة', pass: 'بانتظار الدورة' });
+        localStorage.setItem('m_apps', JSON.stringify(apps));
+        alert('تم التقديم'); sync();
+    };
+    window.onload = sync;
+</script>
+</body>
+</html>
