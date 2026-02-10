@@ -98,4 +98,12 @@
     window.onload = load;
 </script>
 </body>
+<script>
+    // نظام حماية لوحة المشرفين
+    let pass = prompt("الرجاء إدخال رمز الدخول لمشرفي الدورات:");
+    if (pass !== "مشرف_2026") { // يمكنك تغيير كلمة السر هنا
+        alert("غير مصرح لك بالدخول.");
+        window.location.href = "index.html";
+    }
+</script>
 </html>
