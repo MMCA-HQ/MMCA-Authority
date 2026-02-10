@@ -146,5 +146,14 @@
   }
 </script>
 </body>
+<script src=""></script>
 
+<script src=""></script>
+
+<script> const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "" };
+
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } const db = firebase.database();
+
+db.ref('authority_data').on('value', (snapshot) => { const data = snapshot.val(); if (data) { if(data.rules && document.getElementById('rulesDisplay')) { document.getElementById('rulesDisplay').innerText = data.rules; } if(data.courses && document.getElementById('courseNameDisplay')) { document.getElementById('courseNameDisplay').innerText = data.courses.courseName; } } }); </script>
 </html>
+
