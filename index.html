@@ -71,7 +71,15 @@
     <div class="panel">
         <h2>أولاً: نتائج القبول المبدئي</h2>
         <table>
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>الكود</th>
+                    <th>الدورة</th>
+                    <th>الفترة</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
             <tbody id="accBody"></tbody>
         </table>
     </div>
@@ -150,7 +158,14 @@
             let accHtml = ""; let passHtml = "";
             for(let id in apps) {
                 const a = apps[id];
-                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
+                // تحديث الجدول ليشمل الفترة (a.period)
+                accHtml += `<tr>
+                    <td>${a.name}</td>
+                    <td>${a.code}</td>
+                    <td>${a.course}</td>
+                    <td>${a.period || 'غير محدد'}</td>
+                    <td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td>
+                </tr>`;
                 
                 if(a.status === 'مقبول') {
                     let pClass = "pass-waiting"; let pText = a.pass || "قيد الانتظار";
