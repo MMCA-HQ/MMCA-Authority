@@ -2,68 +2,61 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة رئيس الهيئة | التحكم الكامل 2026</title>
+    <title>لوحة رئيس الهيئة | التحكم السحابي الشامل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; } /* مخفي حتى إدخال الباسورد */
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         .boss-panel { border: 2px solid var(--gold); padding: 15px; background: #14160f; margin-bottom: 20px; border-radius: 8px; }
         h3 { color: var(--gold); border-bottom: 1px solid var(--army); padding-bottom: 10px; margin-top: 0; }
         input, textarea, select { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 10px; margin: 5px 0; border-radius: 4px; box-sizing: border-box; }
         .btn { background: var(--gold); color: #000; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 8px; margin-bottom: 5px; border-right: 4px solid var(--gold); }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 0.8rem; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
-        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; font-size: 0.85rem; }
+        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
         th { color: var(--gold); background: #1a1d12; }
-        .section-title { text-align: center; color: var(--gold); margin-bottom: 30px; border-bottom: 2px double var(--gold); padding-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <h1 class="section-title">مكتب رئيس الهيئة - الإدارة السحابية الشاملة</h1>
+    <h1 style="text-align: center; color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px;">نظام إدارة الهيئة العسكرية</h1>
 
     <div class="boss-panel">
-        <h3>| إدارة الشروط العامة</h3>
-        <textarea id="e_cond" rows="3" placeholder="اكتب شروط الالتحاق هنا..."></textarea>
+        <h3>| تعديل الشروط العامة</h3>
+        <textarea id="e_cond" rows="3"></textarea>
         <button class="btn" onclick="saveRules()">تحديث ونشر الشروط</button>
     </div>
 
     <div class="boss-panel">
-        <h3>| إدارة مواعيد الدورات</h3>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="c_name" placeholder="اسم الدورة">
-            <input type="text" id="c_p1" placeholder="الفترة 1">
-            <input type="text" id="c_p2" placeholder="الفترة 2">
-        </div>
-        <button class="btn" style="background:#2ecc71; margin-top:10px;" onclick="addCourse()">إضافة دورة للقائمة +</button>
+        <h3>| إدارة مواعيد الدورات (تعدد وحذف)</h3>
+        <input type="text" id="c_name" placeholder="اسم الدورة (مثال: دورة الصاعقة)">
+        <input type="text" id="c_p1" placeholder="موعد الفترة الأولى">
+        <input type="text" id="c_p2" placeholder="موعد الفترة الثانية">
+        <button class="btn" style="background:#2ecc71" onclick="addCourse()">إضافة الدورة للقائمة +</button>
         <div id="list_courses" style="margin-top:10px;"></div>
     </div>
 
     <div class="boss-panel">
-        <h3>| إدارة استبيانات الدورات</h3>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="s_title" placeholder="اسم الاستبيان">
-            <input type="text" id="s_url" placeholder="رابط الاستبيان">
-        </div>
-        <button class="btn" style="background:#3498db; color:#fff; margin-top:10px;" onclick="addSurvey()">إضافة استبيان جديد +</button>
+        <h3>| إدارة استبيانات وروابط الاختبارات</h3>
+        <input type="text" id="s_title" placeholder="اسم الرابط (مثال: استبيان الرضا)">
+        <input type="text" id="s_url" placeholder="ضع الرابط هنا">
+        <button class="btn" style="background:#3498db; color:#fff" onclick="addSurvey()">إضافة رابط +</button>
         <div id="list_surveys" style="margin-top:10px;"></div>
     </div>
 
     <div class="boss-panel">
-        <h3>| التحكم في المتقدمين (قبول / اجتياز / حذف)</h3>
+        <h3>| سجل المتقدمين (القبول، الاجتياز، والحذف)</h3>
         <table>
             <thead>
                 <tr>
                     <th>المتقدم</th>
                     <th>الدورة</th>
                     <th>حالة القبول</th>
-                    <th>النتيجة النهائية</th>
+                    <th>النتيجة</th>
                     <th>إدارة</th>
                 </tr>
             </thead>
-            <tbody id="list_apps">
-                <tr><td colspan="5">جاري تحميل سجلات المتقدمين...</td></tr>
-            </tbody>
+            <tbody id="list_apps"></tbody>
         </table>
     </div>
 
@@ -71,12 +64,12 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // --- نظام الحماية ---
-        let pass = prompt("الرجاء إدخال الرمز السري للرئيس:");
+        // نظام الحماية الشديد
+        let pass = prompt("الرمز السري للرئيس:");
         if (pass === "رئيس_2026") {
             document.body.style.display = "block";
         } else {
-            alert("دخول غير مصرح!");
+            alert("غير مصرح لك!");
             window.location.href = "index.html";
         }
 
@@ -87,85 +80,94 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- وظائف التحكم ---
+        // حفظ الشروط
         function saveRules() {
             db.ref('authority_data/rules').set(document.getElementById('e_cond').value);
-            alert("تم تحديث الشروط بنجاح");
+            alert("تم التحديث");
         }
 
+        // إضافة دورة
         function addCourse() {
             const name = document.getElementById('c_name').value;
             const p1 = document.getElementById('c_p1').value;
             const p2 = document.getElementById('c_p2').value;
-            if(!name) return;
-            db.ref('authority_data/courses').push({ name, p1, p2 });
-            document.getElementById('c_name').value = ''; 
+            if(name) {
+                db.ref('authority_data/courses').push({ name, p1, p2 });
+                document.getElementById('c_name').value = '';
+                document.getElementById('c_p1').value = '';
+                document.getElementById('c_p2').value = '';
+            }
         }
 
+        // إضافة استبيان
         function addSurvey() {
             const title = document.getElementById('s_title').value;
             const url = document.getElementById('s_url').value;
-            if(!title || !url) return;
-            db.ref('authority_data/surveys').push({ title, url });
-            document.getElementById('s_title').value = '';
-            document.getElementById('s_url').value = '';
+            if(title && url) {
+                db.ref('authority_data/surveys').push({ title, url });
+                document.getElementById('s_title').value = '';
+                document.getElementById('s_url').value = '';
+            }
         }
 
+        // الحذف العام
         function deleteItem(path, id) {
-            if(confirm("سيتم حذف هذا العنصر نهائياً، هل أنت متأكد؟")) {
+            if(confirm("هل تريد الحذف؟")) {
                 db.ref('authority_data/' + path + '/' + id).remove();
             }
         }
 
-        function updateApp(id, field, value) {
-            db.ref('applications/' + id).update({ [field]: value });
-        }
-
+        // حذف متقدم
         function deleteApp(id) {
-            if(confirm("حذف المتقدم من السجلات نهائياً؟")) {
+            if(confirm("حذف المتقدم نهائياً؟")) {
                 db.ref('applications/' + id).remove();
             }
         }
 
-        // --- عرض البيانات الحية ---
-        db.ref().on('value', (snapshot) => {
-            const data = snapshot.val() || {};
+        // تحديث حالة المتقدم
+        function updateApp(id, field, val) {
+            db.ref('applications/' + id).update({ [field]: val });
+        }
+
+        // الاستماع للبيانات
+        db.ref().on('value', (snap) => {
+            const data = snap.val() || {};
             const auth = data.authority_data || {};
             const apps = data.applications || {};
 
-            // 1. الشروط
+            // شروط
             document.getElementById('e_cond').value = auth.rules || "";
 
-            // 2. الدورات
+            // دورات
             let cHtml = "";
             for(let id in auth.courses) {
                 cHtml += `<div class="item-row"><span>${auth.courses[id].name}</span><button class="btn-del" onclick="deleteItem('courses','${id}')">حذف</button></div>`;
             }
             document.getElementById('list_courses').innerHTML = cHtml;
 
-            // 3. الاستبيانات
+            // استبيانات
             let sHtml = "";
             for(let id in auth.surveys) {
                 sHtml += `<div class="item-row"><span>${auth.surveys[id].title}</span><button class="btn-del" onclick="deleteItem('surveys','${id}')">حذف</button></div>`;
             }
             document.getElementById('list_surveys').innerHTML = sHtml;
 
-            // 4. جدول المتقدمين
+            // متقدمين
             let aHtml = "";
             for(let id in apps) {
                 const a = apps[id];
                 aHtml += `<tr>
-                    <td>${a.name}<br><small>${a.code}</small></td>
+                    <td>${a.name}</td>
                     <td>${a.course}</td>
                     <td>
-                        <select onchange="updateApp('${id}', 'status', this.value)">
+                        <select onchange="updateApp('${id}','status',this.value)">
                             <option ${a.status==='تحت المراجعة'?'selected':''}>تحت المراجعة</option>
                             <option ${a.status==='مقبول'?'selected':''}>مقبول</option>
                             <option ${a.status==='مرفوض'?'selected':''}>مرفوض</option>
                         </select>
                     </td>
                     <td>
-                        <select onchange="updateApp('${id}', 'pass', this.value)">
+                        <select onchange="updateApp('${id}','pass',this.value)">
                             <option ${a.pass==='بانتظار الدورة'?'selected':''}>بانتظار الدورة</option>
                             <option ${a.pass==='ناجح'?'selected':''}>ناجح</option>
                             <option ${a.pass==='راسب'?'selected':''}>راسب</option>
@@ -174,7 +176,7 @@
                     <td><button class="btn-del" onclick="deleteApp('${id}')">حذف</button></td>
                 </tr>`;
             }
-            document.getElementById('list_apps').innerHTML = aHtml || "<tr><td colspan='5'>لا يوجد طلبات حالياً</td></tr>";
+            document.getElementById('list_apps').innerHTML = aHtml;
         });
     </script>
 </body>
