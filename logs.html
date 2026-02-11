@@ -10,7 +10,7 @@
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
         h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.4rem; }
         
-        /* تنسيق الحقول كما في الصورة المرفقة */
+        /* تنسيق الحقول المنظم */
         .admin-controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: stretch; flex-direction: row-reverse; }
         input, textarea { 
             background: #000; color: #fff; border: 1px solid #333; padding: 12px; 
@@ -47,11 +47,10 @@
             <input type="text" id="c_p2" placeholder="الفترة 2">
             <input type="text" id="c_p1" placeholder="الفترة 1">
             <input type="text" id="c_name" placeholder="اسم الدورة">
-            <input type="number" id="c_order" placeholder="الترتيب" value="99">
             <input type="hidden" id="c_id">
         </div>
         <table>
-            <thead><tr><th>الترتيب</th><th>الدورة</th><th>ف 1</th><th>ف 2</th><th>التحكم</th></tr></thead>
+            <thead><tr><th>الدورة</th><th>ف 1</th><th>ف 2</th><th>التحكم</th></tr></thead>
             <tbody id="tbody_courses"></tbody>
         </table>
     </div>
@@ -92,7 +91,7 @@
             <input type="text" id="s_name" placeholder="اسم الدورة">
             <input type="hidden" id="s_id">
         </div>
-        <table id="tbody_surveys_table">
+        <table>
             <thead><tr><th>الدورة</th><th>النص</th><th>التحكم</th></tr></thead>
             <tbody id="tbody_surveys"></tbody>
         </table>
@@ -121,7 +120,7 @@
             let obj = {};
 
             if(path === 'courses') {
-                obj = { order: document.getElementById('c_order').value, name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
+                obj = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
             } else if(path === 'surveys') {
                 obj = { course: document.getElementById('s_name').value, url: document.getElementById('s_text').value };
             } else {
@@ -139,8 +138,7 @@
             let pre = path === 'courses' ? 'c' : path === 'exams' ? 'e' : path === 'correction' ? 'co' : 's';
             document.getElementById(pre+'_id').value = id;
             if(path === 'courses') {
-                document.getElementById('c_name').value = data.name; document.getElementById('c_p1').value = data.p1;
-                document.getElementById('c_p2').value = data.p2; document.getElementById('c_order').value = data.order;
+                document.getElementById('c_name').value = data.name; document.getElementById('c_p1').value = data.p1; document.getElementById('c_p2').value = data.p2;
             } else if(path === 'surveys') {
                 document.getElementById('s_name').value = data.course; document.getElementById('s_text').value = data.url;
             } else {
@@ -149,8 +147,8 @@
         }
 
         function clearFields(pre) {
-            let f = pre === 'c' ? ['c_id','c_name','c_p1','c_p2','c_order'] : pre === 's' ? ['s_id','s_name','s_text'] : [pre+'_id', pre+'_name', pre+'_url'];
-            f.forEach(i => document.getElementById(i).value = (i.includes('order') ? "99" : ""));
+            let f = pre === 'c' ? ['c_id','c_name','c_p1','c_p2'] : pre === 's' ? ['s_id','s_name','s_text'] : [pre+'_id', pre+'_name', pre+'_url'];
+            f.forEach(i => document.getElementById(i).value = "");
         }
 
         db.ref('authority_data').on('value', (snap) => {
@@ -163,11 +161,11 @@
                     let item = data[path][i];
                     html += `<tr>`;
                     if(path === 'courses') {
-                        html += `<td>${item.order}</td><td>${item.name}</td><td>${item.p1}</td><td>${item.p2}</td>`;
+                        html += `<td>${item.name}</td><td>${item.p1}</td><td>${item.p2}</td>`;
                     } else if(path === 'surveys') {
                         html += `<td>${item.course}</td><td>${item.url.substring(0,20)}...</td>`;
                     } else {
-                        html += `<td>${item.course}</td>`; // هنا تم إخفاء الرابط الطويل والاكتفاء باسم الدورة
+                        html += `<td>${item.course}</td>`;
                     }
                     html += `<td>
                         <button class="btn-edit" onclick='editItem("${path}","${i}",${JSON.stringify(item)})'>تعديل</button>
