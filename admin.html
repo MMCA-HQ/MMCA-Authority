@@ -11,14 +11,25 @@
         table { width: 100%; border-collapse: collapse; background: #000; }
         th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
+        .btn-link { background: var(--gold); color: #000; padding: 10px 15px; text-decoration: none; font-weight: bold; margin: 5px; display: inline-block; border-radius: 4px; }
+        .btn-correct { background: #3498db; color: #fff; }
         .action-btn { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .accept { background: #2ecc71; } .reject { background: #e74c3c; color: #fff; }
+        .survey-box { background: #000; padding: 15px; border: 1px dashed var(--gold); margin-bottom: 10px; border-radius: 4px; }
         .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
         .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
     <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
+
+    <div class="panel">
+        <h2>مواعيد الدورات العامة</h2>
+        <table id="schedAdmin">
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <div class="panel">
         <h2>إدارة طلبات القبول</h2>
@@ -36,12 +47,27 @@
         </table>
     </div>
 
-    <div class="panel" style="border-color: var(--gold);">
+    <div class="panel" style="border: 1px solid var(--gold);">
         <h2 style="color: var(--gold);">مواعيد الدورات للمقبولين</h2>
         <table>
             <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>فترة الدورة</th></tr></thead>
             <tbody id="admPeriods"></tbody>
         </table>
+    </div>
+
+    <div class="panel">
+        <h2>روابط الاختبارات</h2>
+        <div id="linksView"></div>
+    </div>
+
+    <div class="panel">
+        <h2>روابط التصحيح</h2>
+        <div id="correctLinksView"></div>
+    </div>
+
+    <div class="panel">
+        <h2>استبيانات الدورات</h2>
+        <div id="survView"></div>
     </div>
 
     <div class="footer">
@@ -62,8 +88,20 @@
 
         function upd(id, field, val) { db.ref('applications/' + id).update({ [field]: val }); }
 
-        db.ref('applications').on('value', (snap) => {
-            const apps = snap.val() || {};
+        db.ref().on('value', (snap) => {
+            const data = snap.val() || {};
+            const auth = data.authority_data || {};
+            const apps = data.applications || {};
+
+            // 1. المواعيد العامة
+            let cHtml = "";
+            for(let id in auth.courses) {
+                const c = auth.courses[id];
+                cHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
+            }
+            document.querySelector('#schedAdmin tbody').innerHTML = cHtml;
+
+            // 2. إدارة المتقدمين والجداول الجديدة
             let accH = ""; let passH = ""; let perH = "";
             for(let id in apps) {
                 const a = apps[id];
@@ -75,6 +113,7 @@
                     passH += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
                         <button class="action-btn accept" onclick="upd('${id}','pass','ناجح')">ناجح</button>
                         <button class="action-btn reject" onclick="upd('${id}','pass','راسب')">راسب</button>
+                        <div style="font-size:0.7rem">الحالة: ${a.pass || 'بانتظار الدورة'}</div>
                     </td></tr>`;
                     perH += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td style="color:var(--gold)">${a.period || '-'}</td></tr>`;
                 }
@@ -82,6 +121,16 @@
             document.getElementById('admAcc').innerHTML = accH;
             document.getElementById('admPass').innerHTML = passH;
             document.getElementById('admPeriods').innerHTML = perH;
+
+            // 3. روابط الاختبارات والتصحيح والاستبيانات
+            let exH = ""; for(let id in auth.exams) exH += `<a href="${auth.exams[id].url}" target="_blank" class="btn-link">${auth.exams[id].course}</a>`;
+            document.getElementById('linksView').innerHTML = exH;
+
+            let coH = ""; for(let id in auth.correction) coH += `<a href="${auth.correction[id].url}" target="_blank" class="btn-link btn-correct">${auth.correction[id].course}</a>`;
+            document.getElementById('correctLinksView').innerHTML = coH;
+
+            let svH = ""; for(let id in auth.surveys) svH += `<div class="survey-box"><b>${auth.surveys[id].course}:</b><br>${auth.surveys[id].url}</div>`;
+            document.getElementById('survView').innerHTML = svH;
         });
     </script>
 </body>
