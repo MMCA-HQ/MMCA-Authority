@@ -10,10 +10,6 @@
         h3 { color: var(--gold); margin-top: 0; border-bottom: 1px solid var(--army); padding-bottom: 10px; }
         input, textarea { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; margin: 8px 0; box-sizing: border-box; border-radius: 4px; }
         .btn { background: var(--gold); color: #000; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border: none; margin-top: 5px; border-radius: 4px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; background: #0b0c08; padding: 12px; margin-top: 8px; border-right: 4px solid var(--gold); border-radius: 4px; border: 1px solid #222; }
-        .controls { display: flex; gap: 5px; }
-        .btn-del { background: #e74c3c; color: white; border: none; padding: 6px 15px; cursor: pointer; border-radius: 4px; }
-        .btn-edit { background: #3498db; color: white; border: none; padding: 6px 15px; cursor: pointer; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
         th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
         th { color: var(--gold); }
@@ -21,215 +17,93 @@
     </style>
 </head>
 <body>
+
     <h1 style="text-align: center; color: var(--gold);">مكتب رئيس الهيئة - الإدارة والتحكم</h1>
+
+    <script>
+        let pass = prompt("الرجاء إدخال الرمز السري للوصول إلى السجلات:");
+        if (pass !== "رئيس_2026") { 
+            alert("دخول غير مصرح!");
+            window.location.href = "index.html";
+        }
+    </script>
 
     <div class="boss-panel">
         <h3>شروط الالتحاق بالدورات</h3>
-        <textarea id="e_cond" rows="4"></textarea>
-        <button class="btn" onclick="saveCond()">تحديث الشروط</button>
+        <textarea id="e_cond" rows="4" placeholder="اكتب الشروط هنا..."></textarea>
+        <button class="btn" onclick="saveCond()">تحديث الشروط ونشرها</button>
     </div>
 
     <div class="boss-panel">
         <h3>إدارة مواعيد الدورات</h3>
-        <input type="hidden" id="edit_idx_courses" value="-1">
         <input type="text" id="c_name" placeholder="اسم الدورة">
         <input type="text" id="c_p1" placeholder="موعد الفترة 1">
         <input type="text" id="c_p2" placeholder="موعد الفترة 2">
-        <button class="btn" id="btn_courses" style="background:#2ecc71" onclick="saveItem('m_courses')">حفظ الدورة</button>
-        <div id="list_courses"></div>
-    </div>
-
-    <div class="boss-panel">
-        <h3>إدارة روابط الاختبارات</h3>
-        <input type="hidden" id="edit_idx_links" value="-1">
-        <input type="text" id="l_title" placeholder="عنوان الاختبار">
-        <input type="text" id="l_url" placeholder="الرابط">
-        <button class="btn" id="btn_links" style="background:#3498db; color:#fff" onclick="saveItem('m_links')">حفظ الرابط</button>
-        <div id="list_links"></div>
-    </div>
-
-    <div class="boss-panel">
-        <h3>إدارة استبيانات الدورات</h3>
-        <input type="hidden" id="edit_idx_survs" value="-1">
-        <input type="text" id="s_name" placeholder="اسم الدورة">
-        <textarea id="s_content" placeholder="نص الاستبيان..."></textarea>
-        <button class="btn" id="btn_survs" style="background:#9b59b6; color:#fff" onclick="saveItem('m_survs')">حفظ الاستبيان</button>
-        <div id="list_survs"></div>
-    </div>
-
-    <div class="boss-panel" style="border-color: #e74c3c;">
-        <h3 style="color: #e74c3c;">إدارة نتائج القبول والاجتياز (جميع المتقدمين)</h3>
-        <p style="font-size: 0.8rem; color: #888;">* يمكنك تعديل أو حذف أي متقدم، أو مسح كافة النتائج بضغطة واحدة.</p>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>المتقدم</th>
-                    <th>الكود</th>
-                    <th>الدورة</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="list_apps"></tbody>
-        </table>
-        
-        <button class="btn" style="background:#e74c3c; color:#fff; margin-top: 20px;" onclick="clearAllResults()">
-            حذف جميع نتائج القبول والاجتياز نهائياً
-        </button>
+        <button class="btn" style="background:#2ecc71" onclick="saveCourse()">حفظ الدورة ونشر المواعيد</button>
     </div>
 
     <div class="footer">جميع الحقوق محفوظة © 2026 - دولة مارفل</div>
 
-<script>
-    function saveCond() {
-        localStorage.setItem('m_cond', document.getElementById('e_cond').value.replace(/\n/g, '<br>'));
-        alert('تم تحديث الشروط');
-    }
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    function saveItem(key) {
-        let list = JSON.parse(localStorage.getItem(key) || '[]');
-        let editIdx = parseInt(document.getElementById('edit_idx_' + key.split('_')[1]).value);
-        let item = {};
+    <script>
+        // إعدادات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+            authDomain: "mmca-authority.firebaseapp.com",
+            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
+            projectId: "mmca-authority",
+            storageBucket: "mmca-authority.firebasestorage.app",
+            messagingSenderId: "105278081999",
+            appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
+        };
 
-        if (key === 'm_courses') {
-            item = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
-            if (!item.name) return;
-            resetFields('c_name', 'c_p1', 'c_p2', 'btn_courses', 'edit_idx_courses', 'حفظ الدورة', '#2ecc71');
-        } else if (key === 'm_links') {
-            item = { title: document.getElementById('l_title').value, url: document.getElementById('l_url').value };
-            if (!item.title) return;
-            resetFields('l_title', 'l_url', null, 'btn_links', 'edit_idx_links', 'حفظ الرابط', '#3498db');
-        } else if (key === 'm_survs') {
-            item = { name: document.getElementById('s_name').value, content: document.getElementById('s_content').value };
-            if (!item.name) return;
-            resetFields('s_name', 's_content', null, 'btn_survs', 'edit_idx_survs', 'حفظ الاستبيان', '#9b59b6');
+        // تفعيل Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // 1. وظيفة تحديث الشروط (تطرد null فوراً)
+        function saveCond() {
+            const rulesVal = document.getElementById('e_cond').value;
+            if (!rulesVal) { alert("الرجاء كتابة الشروط أولاً"); return; }
+            
+            db.ref('authority_data/rules').set(rulesVal).then(() => {
+                alert("✅ تم التحديث! اختفت كلمة null من السحاب وظهرت نصوصك.");
+            }).catch(err => alert("خطأ في الاتصال: " + err));
         }
 
-        if (editIdx > -1) list[editIdx] = item; else list.push(item);
-        localStorage.setItem(key, JSON.stringify(list));
-        renderLists();
-    }
+        // 2. وظيفة حفظ الدورة
+        function saveCourse() {
+            const name = document.getElementById('c_name').value;
+            const p1 = document.getElementById('c_p1').value;
+            const p2 = document.getElementById('c_p2').value;
 
-    function editItem(key, idx) {
-        let list = JSON.parse(localStorage.getItem(key));
-        let data = list[idx];
-        if (key === 'm_courses') {
-            document.getElementById('c_name').value = data.name; document.getElementById('c_p1').value = data.p1; document.getElementById('c_p2').value = data.p2;
-            setupEditMode('edit_idx_courses', idx, 'btn_courses', 'تأكيد التعديل');
-        } else if (key === 'm_links') {
-            document.getElementById('l_title').value = data.title; document.getElementById('l_url').value = data.url;
-            setupEditMode('edit_idx_links', idx, 'btn_links', 'تأكيد التعديل');
-        } else if (key === 'm_survs') {
-            document.getElementById('s_name').value = data.name; document.getElementById('s_content').value = data.content;
-            setupEditMode('edit_idx_survs', idx, 'btn_survs', 'تأكيد التعديل');
+            if (!name) { alert("الرجاء إدخال اسم الدورة"); return; }
+
+            db.ref('authority_data/courses').set({
+                courseName: name,
+                period1: p1,
+                period2: p2
+            }).then(() => {
+                alert("✅ تم نشر مواعيد الدورة بنجاح!");
+            }).catch(err => alert("خطأ في الاتصال: " + err));
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
 
-    function setupEditMode(idTag, idx, btnTag, text) {
-        document.getElementById(idTag).value = idx;
-        const btn = document.getElementById(btnTag);
-        btn.innerText = text; btn.style.background = "#f39c12";
-    }
-
-    function resetFields(f1, f2, f3, btnTag, idTag, btnText, btnColor) {
-        document.getElementById(f1).value = ''; if(f2) document.getElementById(f2).value = ''; if(f3) document.getElementById(f3).value = '';
-        document.getElementById(idTag).value = "-1";
-        const btn = document.getElementById(btnTag); btn.innerText = btnText; btn.style.background = btnColor;
-    }
-
-    function delItem(key, idx) {
-        if(confirm('هل أنت متأكد؟')) {
-            let list = JSON.parse(localStorage.getItem(key));
-            list.splice(idx, 1);
-            localStorage.setItem(key, JSON.stringify(list));
-            renderLists();
-        }
-    }
-
-    // وظائف حذف النتائج الخاصة بالمتقدمين
-    function clearAllResults() {
-        if(confirm('تحذير: سيتم حذف جميع المتقدمين ونتائجهم من كافة الصفحات. هل أنت متأكد؟')) {
-            localStorage.removeItem('m_apps');
-            renderLists();
-        }
-    }
-
-    function renderLists() {
-        document.getElementById('e_cond').value = (localStorage.getItem('m_cond')||'').replace(/<br>/g,'\n');
-        
-        // عرض الدورات والروابط والاستبيانات (نفس الكود السابق)
-        const courses = JSON.parse(localStorage.getItem('m_courses') || '[]');
-        document.getElementById('list_courses').innerHTML = courses.map((c, i) => `<div class="item-row"><span>${c.name}</span><div class="controls"><button class="btn-edit" onclick="editItem('m_courses', ${i})">تعديل</button><button class="btn-del" onclick="delItem('m_courses', ${i})">حذف</button></div></div>`).join('');
-        
-        const links = JSON.parse(localStorage.getItem('m_links') || '[]');
-        document.getElementById('list_links').innerHTML = links.map((l, i) => `<div class="item-row"><span>${l.title}</span><div class="controls"><button class="btn-edit" onclick="editItem('m_links', ${i})">تعديل</button><button class="btn-del" onclick="delItem('m_links', ${i})">حذف</button></div></div>`).join('');
-
-        const survs = JSON.parse(localStorage.getItem('m_survs') || '[]');
-        document.getElementById('list_survs').innerHTML = survs.map((s, i) => `<div class="item-row"><span>استبيان: ${s.name}</span><div class="controls"><button class="btn-edit" onclick="editItem('m_survs', ${i})">تعديل</button><button class="btn-del" onclick="delItem('m_survs', ${i})">حذف</button></div></div>`).join('');
-
-        // عرض المتقدمين للحذف الفردي
-        const apps = JSON.parse(localStorage.getItem('m_apps') || '[]');
-        document.getElementById('list_apps').innerHTML = apps.map((a, i) => `
-            <tr>
-                <td>${a.name}</td>
-                <td>${a.code}</td>
-                <td>${a.course}</td>
-                <td><button class="btn-del" onclick="delItem('m_apps', ${i})">حذف</button></td>
-            </tr>
-        `).join('');
-    }
-
-    window.onload = renderLists;
-</script>
+        // جلب البيانات الحالية عند فتح الصفحة لرؤيتها في المربعات
+        db.ref('authority_data').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.rules) document.getElementById('e_cond').value = data.rules;
+                if (data.courses) {
+                    document.getElementById('c_name').value = data.courses.courseName || '';
+                    document.getElementById('c_p1').value = data.courses.period1 || '';
+                    document.getElementById('c_p2').value = data.courses.period2 || '';
+                }
+            }
+        });
+    </script>
 </body>
-<script>
-    let pass = prompt("الرجاء إدخال الرمز السري للوصول إلى السجلات:");
-    if (pass !== "رئيس_2026") { 
-        alert("دخول غير مصرح!");
-        window.location.href = "index.html";
-    }
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
-    authDomain: "mmca-authority.firebaseapp.com",
-    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
-    projectId: "mmca-authority",
-    storageBucket: "mmca-authority.firebasestorage.app",
-    messagingSenderId: "105278081999",
-    appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
-  };
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  const db = firebase.database();
-
-  // وظيفة "تحديث الشروط"
-  function saveCond() {
-    const rulesVal = document.getElementById('e_cond').value;
-    db.ref('authority_data/rules').set(rulesVal).then(() => {
-      alert("✅ تمت مزامنة الشروط بنجاح!");
-    });
-  }
-
-  // وظيفة "حفظ الدورة"
-  function saveItem(type) {
-    const name = document.getElementById('c_name').value;
-    const p1 = document.getElementById('c_p1').value;
-    const p2 = document.getElementById('c_p2').value;
-
-    db.ref('authority_data/courses').set({
-      courseName: name,
-      period1: p1,
-      period2: p2
-    }).then(() => {
-      alert("✅ تم تفعيل المواعيد الجديدة!");
-    });
-  }
-</script>
+</html>
