@@ -1,36 +1,198 @@
-<script>
-    // ... الكود العلوي وإعدادات Firebase ...
-
-    db.ref().on('value', (snap) => {
-        const data = snap.val() || {};
-        const auth = data.authority_data || {};
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بوابة المتقدمين | دولة مارفل</title>
+    <style>
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; line-height: 1.6; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 5px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; font-size: 1.2rem; }
         
-        // --- ابدأ التعديل هنا لضمان عمل الاستبيانات ---
-        
-        let sHtml = "";
-        const surveysData = auth.surveys; // جلب بيانات الاستبيانات من السحاب
+        /* تنسيق الاستمارة */
+        label { display: block; margin-top: 10px; color: var(--gold); font-size: 0.9rem; }
+        input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 5px 0 15px 0; border-radius: 4px; box-sizing: border-box; font-family: Tahoma; }
+        .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; font-size: 1.1rem; transition: 0.3s; }
+        .btn-submit:hover { background: #e0b869; box-shadow: 0 0 10px var(--gold); }
 
-        if (surveysData) {
-            for (let id in surveysData) {
-                const s = surveysData[id];
-                sHtml += `
-                <div class="survey-card">
-                    <b>دورة: ${s.course}</b>
-                    <div class="survey-text">${s.url}</div>
-                </div>`;
+        /* تنسيق الجداول */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
+        th { background: #1a1d12; color: var(--gold); }
+        
+        /* ألوان الحالات والنتائج */
+        .status-accepted { color: #2ecc71; font-weight: bold; }
+        .status-pending { color: #f1c40f; }
+        .status-rejected { color: #e74c3c; }
+        .pass-success { color: #2ecc71; font-weight: bold; border: 1px solid #2ecc71; padding: 2px 8px; border-radius: 3px; }
+        .pass-failed { color: #e74c3c; font-weight: bold; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 3px; }
+        
+        .rules-box { white-space: pre-wrap; color: #ddd; font-size: 0.95rem; }
+
+        /* تنسيق الاستبيانات */
+        .survey-card { background: #000; border-right: 5px solid var(--gold); border-left: 1px solid var(--army); border-top: 1px solid var(--army); border-bottom: 1px solid var(--army); padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+        .survey-card b { color: var(--gold); display: block; margin-bottom: 8px; font-size: 1rem; }
+        .survey-text { color: #fff; white-space: pre-wrap; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">هيئة تنظيم الدورات العسكرية - دولة مارفل</h1>
+
+    <div class="panel">
+        <h2>| شروط الدورات</h2>
+        <div id="rulesDisplay" class="rules-box">جاري تحميل الشروط...</div>
+    </div>
+
+    <div class="panel">
+        <h2>| مواعيد الدورات</h2>
+        <table>
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody id="coursesTable"></tbody>
+        </table>
+    </div>
+
+    <div class="panel" style="border: 2px solid var(--gold);">
+        <h2 style="color: var(--gold);">| استمارة طلب الالتحاق</h2>
+        <label>الاسم الكامل:</label>
+        <input type="text" id="regName" placeholder="أدخل اسمك الثلاثي">
+        
+        <label>الكود العسكري:</label>
+        <input type="text" id="regCode" placeholder="أدخل الكود الخاص بك">
+        
+        <label>العمر:</label>
+        <input type="number" id="regAge" placeholder="أدخل عمرك">
+        
+        <label>الدورة المطلوبة:</label>
+        <select id="regCourse" onchange="updatePeriods()">
+            <option value="">-- اختر الدورة --</option>
+        </select>
+        
+        <label>اختر الفترة:</label>
+        <select id="regPeriod">
+            <option value="">-- يرجى اختيار الدورة أولاً --</option>
+        </select>
+        
+        <button class="btn-submit" onclick="submitApplication()">إرسال الطلب الرسمي</button>
+    </div>
+
+    <div class="panel">
+        <h2>أولاً: نتائج القبول المبدئي</h2>
+        <table>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
+            <tbody id="accBody"></tbody>
+        </table>
+    </div>
+
+    <div class="panel" style="border-color: var(--gold);">
+        <h2>ثانياً: لوحة الشرف (نتائج اجتياز الدورات)</h2>
+        <table>
+            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
+            <tbody id="passBody"></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| استبيانات الدورات</h2>
+        <div id="survDisplay"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // دالة تحديث الفترات
+        function updatePeriods() {
+            const courseName = document.getElementById('regCourse').value;
+            db.ref('authority_data/courses').once('value', snap => {
+                const courses = snap.val();
+                let options = '<option value="">-- اختر الفترة --</option>';
+                for(let id in courses) {
+                    if(courses[id].name === courseName) {
+                        if(courses[id].p1) options += `<option value="${courses[id].p1}">${courses[id].p1}</option>`;
+                        if(courses[id].p2) options += `<option value="${courses[id].p2}">${courses[id].p2}</option>`;
+                    }
+                }
+                document.getElementById('regPeriod').innerHTML = options;
+            });
+        }
+
+        // إرسال الطلب
+        function submitApplication() {
+            const name = document.getElementById('regName').value;
+            const code = document.getElementById('regCode').value;
+            const age = document.getElementById('regAge').value;
+            const course = document.getElementById('regCourse').value;
+            const period = document.getElementById('regPeriod').value;
+
+            if(!name || !code || !age || !course || !period) return alert("أكمل كافة الحقول المكتوبة");
+
+            db.ref('applications').push({
+                name, code, age, course, period,
+                status: 'تحت المراجعة',
+                pass: 'بانتظار الدورة'
+            }).then(() => {
+                alert("تم الإرسال بنجاح");
+                document.getElementById('regName').value = "";
+                document.getElementById('regCode').value = "";
+                document.getElementById('regAge').value = "";
+            });
+        }
+
+        // المستمع الرئيسي للبيانات
+        db.ref().on('value', (snap) => {
+            const data = snap.val() || {};
+            const auth = data.authority_data || {};
+            const apps = data.applications || {};
+
+            // تحديث الشروط
+            document.getElementById('rulesDisplay').innerText = auth.rules || "لا توجد شروط حالياً";
+
+            // تحديث المواعيد وقائمة الدورات
+            let cHtml = ""; let selHtml = '<option value="">-- اختر الدورة --</option>';
+            for(let id in auth.courses) {
+                const c = auth.courses[id];
+                cHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
+                selHtml += `<option value="${c.name}">${c.name}</option>`;
             }
-        } else {
-            sHtml = '<p style="color:#666; text-align:center;">لا توجد استبيانات حالياً</p>';
-        }
+            document.getElementById('coursesTable').innerHTML = cHtml;
+            document.getElementById('regCourse').innerHTML = selHtml;
 
-        // وضع المحتوى داخل الـ div المخصص له
-        const survContainer = document.getElementById('survDisplay');
-        if(survContainer) {
-            survContainer.innerHTML = sHtml;
-        }
+            // تحديث الاستبيانات (نصي)
+            let sHtml = "";
+            if (auth.surveys) {
+                for (let id in auth.surveys) {
+                    const s = auth.surveys[id];
+                    sHtml += `<div class="survey-card"><b>دورة: ${s.course}</b><div class="survey-text">${s.url}</div></div>`;
+                }
+            } else { sHtml = '<p style="text-align:center; color:#666;">لا توجد استبيانات</p>'; }
+            document.getElementById('survDisplay').innerHTML = sHtml;
 
-        // --- نهاية تعديل الاستبيانات ---
-
-        // (باقي كود الجداول والمواعيد يكمل هنا...)
-    });
-</script>
+            // تحديث الجداول (القبول ولوحة الشرف)
+            let accHtml = ""; let passHtml = "";
+            for(let id in apps) {
+                const a = apps[id];
+                // جدول القبول المبدئي
+                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
+                
+                // لوحة الشرف (للمقبولين فقط)
+                if(a.status === 'مقبول') {
+                    let pClass = "pass-waiting"; let pText = a.pass || "قيد الانتظار";
+                    if(a.pass === 'ناجح' || a.pass === 'تم الاجتياز') { pClass = "pass-success"; pText = "اجتياز ✓"; }
+                    if(a.pass === 'راسب' || a.pass === 'عدم اجتياز') { pClass = "pass-failed"; pText = "عدم اجتياز ✗"; }
+                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><span class="${pClass}">${pText}</span></td></tr>`;
+                }
+            }
+            document.getElementById('accBody').innerHTML = accHtml;
+            document.getElementById('passBody').innerHTML = passHtml;
+        });
+    </script>
+</body>
+</html>
