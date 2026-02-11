@@ -16,7 +16,6 @@
         .action-btn { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .accept { background: #2ecc71; color: #000; }
         .reject { background: #e74c3c; color: #fff; }
-        /* تصميم صندوق الاستبيان النصي الجديد */
         .survey-box { background: #000; padding: 20px; border: 1px solid var(--gold); margin-bottom: 15px; border-radius: 8px; line-height: 1.6; }
         .survey-title { color: var(--gold); font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid var(--army); padding-bottom: 10px; margin-bottom: 10px; display: block; }
         .survey-content { color: #fff; white-space: pre-wrap; word-wrap: break-word; }
@@ -26,7 +25,7 @@
     <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
 
     <div class="panel">
-        <h2>مواعيد الدورات</h2>
+        <h2>مواعيد الدورات العامة</h2>
         <table id="schedAdmin">
             <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
             <tbody></tbody>
@@ -49,6 +48,21 @@
         </table>
     </div>
 
+    <div class="panel" style="border-color: var(--gold);">
+        <h2 style="color: var(--gold);">مواعيد الدورات للمقبولين</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>الكود</th>
+                    <th>الدورة</th>
+                    <th>فترة الدورة</th>
+                </tr>
+            </thead>
+            <tbody id="admPeriods"></tbody>
+        </table>
+    </div>
+
     <div class="panel">
         <h2>روابط الاختبارات</h2>
         <div id="linksView"></div>
@@ -68,7 +82,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // نظام الحماية
         let pass = prompt("الرجاء إدخال رمز الدخول لمشرفي الدورات:");
         if (pass === "مشرف_2026") {
             document.body.style.display = "block";
@@ -93,7 +106,7 @@
             const auth = data.authority_data || {};
             const apps = data.applications || {};
 
-            // 1. عرض المواعيد
+            // 1. عرض المواعيد العامة
             let courseHtml = "";
             for(let id in auth.courses) {
                 const c = auth.courses[id];
@@ -101,27 +114,43 @@
             }
             document.querySelector('#schedAdmin tbody').innerHTML = courseHtml;
 
-            // 2. عرض المتقدمين والنتائج
+            // 2. معالجة بيانات المتقدمين
             let accHtml = "";
             let passHtml = "";
+            let periodsHtml = ""; // متغير للقسم الجديد
+
             for(let id in apps) {
                 const a = apps[id];
+                
+                // جدول الإدارة (القبول والرفض)
                 accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
                     <button class="action-btn accept" onclick="upd('${id}','status','مقبول')">قبول</button>
                     <button class="action-btn reject" onclick="upd('${id}','status','مرفوض')">رفض</button>
-                    <div style="font-size:0.8rem; color:var(--gold)">الحالة الحالية: ${a.status}</div>
+                    <div style="font-size:0.8rem; color:var(--gold)">الحالة: ${a.status}</div>
                 </td></tr>`;
 
+                // إذا كان مقبولاً يظهر في قسم النتائج وقسم المواعيد الجديد
                 if(a.status === 'مقبول') {
+                    // جدول النتائج
                     passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
                         <button class="action-btn accept" onclick="upd('${id}','pass','ناجح')">ناجح</button>
                         <button class="action-btn reject" onclick="upd('${id}','pass','راسب')">راسب</button>
                         <div style="font-size:0.8rem; color:var(--gold)">النتيجة: ${a.pass || 'بانتظار الدورة'}</div>
                     </td></tr>`;
+
+                    // جدول المواعيد للمقبولين (القسم الجديد)
+                    periodsHtml += `<tr>
+                        <td>${a.name}</td>
+                        <td>${a.code}</td>
+                        <td>${a.course}</td>
+                        <td style="color:var(--gold); font-weight:bold;">${a.period || 'غير محدد'}</td>
+                    </tr>`;
                 }
             }
+            
             document.getElementById('admAcc').innerHTML = accHtml;
             document.getElementById('admPass').innerHTML = passHtml || "<tr><td colspan='4'>لا يوجد مقبولين حالياً</td></tr>";
+            document.getElementById('admPeriods').innerHTML = periodsHtml || "<tr><td colspan='4'>لا يوجد مقبولين حالياً</td></tr>";
 
             // 3. روابط الاختبارات
             let exHtml = "";
@@ -137,7 +166,7 @@
             }
             document.getElementById('correctLinksView').innerHTML = coHtml;
 
-            // 5. استبيانات الدورات (تعديل لعرض النص المكتوب)
+            // 5. استبيانات الدورات
             let svHtml = "";
             for(let id in auth.surveys) {
                 const s = auth.surveys[id];
