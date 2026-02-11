@@ -2,20 +2,22 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة رئيس الهيئة | الإدارة الشاملة</title>
+    <title>لوحة رئيس الهيئة | الإدارة المنفردة</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
-        .boss-panel { border: 2px solid var(--gold); padding: 15px; background: #14160f; margin-bottom: 20px; border-radius: 8px; }
-        h3 { color: var(--gold); border-bottom: 1px solid var(--army); padding-bottom: 10px; margin-top: 0; }
-        input, textarea, select { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; margin: 8px 0; border-radius: 4px; box-sizing: border-box; }
-        .btn { background: var(--gold); color: #000; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 5px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-right: 4px solid var(--gold); }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 0.8rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
-        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
+        .boss-panel { border: 2px solid var(--gold); padding: 15px; background: #14160f; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h3 { color: var(--gold); border-bottom: 2px solid var(--army); padding-bottom: 10px; margin-top: 0; font-size: 1.3rem; }
+        label { display: block; margin-top: 10px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; margin: 5px 0 15px 0; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: var(--gold); color: #000; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
+        .btn:hover { background: #e0b869; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #1d1f14; padding: 10px; margin-bottom: 8px; border-right: 5px solid var(--gold); border-radius: 4px; }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 3px; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #000; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { color: var(--gold); background: #1a1d12; }
-        .section-header { text-align: center; color: var(--gold); border-bottom: 2px double var(--gold); padding-bottom: 15px; margin-bottom: 30px; }
+        .section-header { text-align: center; color: var(--gold); border-bottom: 3px double var(--gold); padding-bottom: 15px; margin-bottom: 40px; }
     </style>
 </head>
 <body>
@@ -24,7 +26,7 @@
 
     <div class="boss-panel">
         <h3>| إدارة الشروط العامة</h3>
-        <textarea id="e_cond" rows="3"></textarea>
+        <textarea id="e_cond" rows="3" placeholder="أدخل التعليمات والشروط هنا..."></textarea>
         <button class="btn" onclick="saveRules()">تحديث ونشر الشروط</button>
     </div>
 
@@ -33,32 +35,38 @@
         <input type="text" id="c_name" placeholder="اسم الدورة">
         <input type="text" id="c_p1" placeholder="الفترة الأولى">
         <input type="text" id="c_p2" placeholder="الفترة الثانية">
-        <button class="btn" style="background:#2ecc71" onclick="addItem('courses', {name: c_name.value, p1: c_p1.value, p2: c_p2.value}, ['c_name','c_p1','c_p2'])">إضافة دورة +</button>
-        <div id="list_courses"></div>
+        <button class="btn" style="background:#2ecc71" onclick="addGeneral('courses', {name: c_name.value, p1: c_p1.value, p2: c_p2.value}, ['c_name','c_p1','c_p2'])">إضافة الدورة للقائمة +</button>
+        <div id="list_courses" style="margin-top:15px;"></div>
     </div>
 
     <div class="boss-panel">
         <h3>| روابط الاختبارات</h3>
-        <input type="text" id="ex_name" placeholder="اسم الدورة">
-        <input type="text" id="ex_url" placeholder="رابط الاختبار">
-        <button class="btn" style="background:#3498db; color:#fff" onclick="addItem('exams', {course: ex_name.value, url: ex_url.value}, ['ex_name','ex_url'])">إضافة رابط اختبار +</button>
-        <div id="list_exams"></div>
+        <label>اسم الدورة:</label>
+        <input type="text" id="ex_name" placeholder="مثلاً: دورة الصاعقة">
+        <label>رابط الدورة (الاختبار):</label>
+        <input type="text" id="ex_url" placeholder="ضع رابط الاختبار هنا">
+        <button class="btn" style="background:#3498db; color:#fff" onclick="addGeneral('exams', {course: ex_name.value, url: ex_url.value}, ['ex_name','ex_url'])">إضافة رابط اختبار +</button>
+        <div id="list_exams" style="margin-top:15px;"></div>
     </div>
 
     <div class="boss-panel">
         <h3>| روابط التصحيح</h3>
-        <input type="text" id="co_name" placeholder="اسم الدورة">
-        <input type="text" id="co_url" placeholder="رابط التصحيح">
-        <button class="btn" style="background:#9b59b6; color:#fff" onclick="addItem('correction', {course: co_name.value, url: co_url.value}, ['co_name','co_url'])">إضافة رابط تصحيح +</button>
-        <div id="list_correction"></div>
+        <label>اسم الدورة:</label>
+        <input type="text" id="co_name" placeholder="مثلاً: دورة المظلات">
+        <label>رابط الدورة (التصحيح):</label>
+        <input type="text" id="co_url" placeholder="ضع رابط ملف التصحيح هنا">
+        <button class="btn" style="background:#9b59b6; color:#fff" onclick="addGeneral('correction', {course: co_name.value, url: co_url.value}, ['co_name','co_url'])">إضافة رابط تصحيح +</button>
+        <div id="list_correction" style="margin-top:15px;"></div>
     </div>
 
     <div class="boss-panel">
         <h3>| إدارة استبيانات الدورات</h3>
+        <label>اسم الدورة:</label>
         <input type="text" id="s_name" placeholder="اسم الدورة">
-        <input type="text" id="s_url" placeholder="استبيان الدورة">
-        <button class="btn" style="background:#e67e22; color:#fff" onclick="addItem('surveys', {course: s_name.value, url: s_url.value}, ['s_name','s_url'])">إضافة استبيان +</button>
-        <div id="list_surveys"></div>
+        <label>استبيان الدورة:</label>
+        <input type="text" id="s_url" placeholder="ضع رابط الاستبيان هنا">
+        <button class="btn" style="background:#e67e22; color:#fff" onclick="addGeneral('surveys', {course: s_name.value, url: s_url.value}, ['s_name','s_url'])">إضافة استبيان +</button>
+        <div id="list_surveys" style="margin-top:15px;"></div>
     </div>
 
     <div class="boss-panel">
@@ -68,8 +76,8 @@
                 <tr>
                     <th>المتقدم</th>
                     <th>الدورة</th>
-                    <th>القبول</th>
-                    <th>الاجتياز</th>
+                    <th>القبول المبدئي</th>
+                    <th>النتيجة النهائية</th>
                     <th>إدارة</th>
                 </tr>
             </thead>
@@ -81,7 +89,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // الحماية
+        // نظام الحماية
         let pass = prompt("الرمز السري للرئيس:");
         if (pass === "رئيس_2026") { document.body.style.display = "block"; } 
         else { alert("مرفوض!"); window.location.href = "index.html"; }
@@ -93,26 +101,28 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // وظائف عامة
+        // الحفظ العام
         function saveRules() {
             db.ref('authority_data/rules').set(document.getElementById('e_cond').value);
             alert("تم تحديث الشروط");
         }
 
-        function addItem(path, data, fields) {
-            if(!Object.values(data)[0]) return alert("أكمل البيانات");
+        // دالة الإضافة العامة لضمان عدم التداخل
+        function addGeneral(path, data, fields) {
+            if(!Object.values(data)[0] || !Object.values(data)[1]) return alert("يرجى تعبئة جميع الحقول");
             db.ref('authority_data/' + path).push(data);
             fields.forEach(f => document.getElementById(f).value = '');
+            alert("تمت الإضافة بنجاح");
         }
 
         function deleteItem(path, id) {
-            if(confirm("حذف؟")) db.ref('authority_data/' + path + '/' + id).remove();
+            if(confirm("هل تريد الحذف؟")) db.ref('authority_data/' + path + '/' + id).remove();
         }
 
         function updateApp(id, field, val) { db.ref('applications/' + id).update({ [field]: val }); }
-        function deleteApp(id) { if(confirm("حذف المتقدم؟")) db.ref('applications/' + id).remove(); }
+        function deleteApp(id) { if(confirm("حذف المتقدم نهائياً؟")) db.ref('applications/' + id).remove(); }
 
-        // التحديث المباشر
+        // التحديث الحي لكل الأقسام
         db.ref().on('value', (snap) => {
             const data = snap.val() || {};
             const auth = data.authority_data || {};
@@ -120,21 +130,23 @@
 
             document.getElementById('e_cond').value = auth.rules || "";
 
-            // عرض العناصر (دورات، اختبارات، تصحيح، استبيانات)
-            const renderList = (obj, elementId, path) => {
+            const renderUI = (obj, elementId, path) => {
                 let html = "";
                 for(let id in obj) {
-                    html += `<div class="item-row"><span>${obj[id].name || obj[id].course}</span><button class="btn-del" onclick="deleteItem('${path}','${id}')">حذف</button></div>`;
+                    const item = obj[id];
+                    html += `<div class="item-row">
+                        <span><b>${item.name || item.course}</b></span>
+                        <button class="btn-del" onclick="deleteItem('${path}','${id}')">حذف</button>
+                    </div>`;
                 }
                 document.getElementById(elementId).innerHTML = html;
             };
 
-            renderList(auth.courses, 'list_courses', 'courses');
-            renderList(auth.exams, 'list_exams', 'exams');
-            renderList(auth.correction, 'list_correction', 'correction');
-            renderList(auth.surveys, 'list_surveys', 'surveys');
+            renderUI(auth.courses, 'list_courses', 'courses');
+            renderUI(auth.exams, 'list_exams', 'exams');
+            renderUI(auth.correction, 'list_correction', 'correction');
+            renderUI(auth.surveys, 'list_surveys', 'surveys');
 
-            // المتقدمين
             let aHtml = "";
             for(let id in apps) {
                 const a = apps[id];
