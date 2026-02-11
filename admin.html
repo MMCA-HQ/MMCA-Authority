@@ -7,17 +7,18 @@
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; background: #000; }
-        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; background: #000; margin-bottom: 10px; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
-        .btn-link { background: var(--gold); color: #000; padding: 8px 12px; text-decoration: none; font-weight: bold; margin: 5px; display: inline-block; border-radius: 4px; }
-        .btn-correct { background: #3498db; color: #fff; }
-        .action-btn { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
-        .accept { background: #2ecc71; } .reject { background: #e74c3c; color: #fff; }
-        /* نمط الاستبيانات القديم */
-        .survey-item { background: #000; padding: 15px; border: 1px dashed var(--gold); margin-bottom: 10px; border-radius: 4px; line-height: 1.6; }
-        .survey-item b { color: var(--gold); display: block; margin-bottom: 5px; font-size: 1.1rem; }
+        .status-txt { font-size: 0.8rem; margin-top: 5px; font-weight: bold; display: block; }
+        .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
+        .btn-accept { background: #2ecc71; color: #000; }
+        .btn-reject { background: #e74c3c; color: #fff; }
+        .link-box { background: var(--gold); color: #000; padding: 10px 15px; text-decoration: none; font-weight: bold; margin: 5px; display: inline-block; border-radius: 4px; }
+        .link-corr { background: #3498db; color: #fff; }
+        .survey-card { background: #000; padding: 15px; border-right: 5px solid var(--gold); border-bottom: 1px solid var(--army); margin-bottom: 10px; line-height: 1.6; }
+        .survey-card b { color: var(--gold); display: block; font-size: 1.1rem; margin-bottom: 5px; }
         .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
         .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
     </style>
@@ -26,15 +27,23 @@
     <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
 
     <div class="panel">
-        <h2>إدارة طلبات القبول</h2>
+        <h2>| مواعيد الدورات العامة</h2>
+        <table id="mainSched">
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| إدارة طلبات القبول</h2>
         <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار</th></tr></thead>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار والحالة</th></tr></thead>
             <tbody id="admAcc"></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>رصد نتائج الاجتياز</h2>
+        <h2>| رصد نتائج الاجتياز</h2>
         <table>
             <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
             <tbody id="admPass"></tbody>
@@ -42,78 +51,86 @@
     </div>
 
     <div class="panel" style="border: 1px solid var(--gold);">
-        <h2 style="color: var(--gold);">مواعيد الدورات للمقبولين</h2>
+        <h2>| مواعيد الدورات للمقبولين</h2>
         <table>
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>فترة الدورة</th></tr></thead>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الفترة المختارة</th></tr></thead>
             <tbody id="admPeriods"></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>روابط الاختبارات</h2>
-        <div id="linksView"></div>
+        <h2>| روابط الاختبارات</h2>
+        <div id="examsView"></div>
     </div>
 
     <div class="panel">
-        <h2>روابط التصحيح</h2>
-        <div id="correctLinksView"></div>
+        <h2>| روابط التصحيح</h2>
+        <div id="corrView"></div>
     </div>
 
     <div class="panel">
-        <h2>استبيانات الدورات (نصوص)</h2>
+        <h2>| استبيانات الدورات (نصوص)</h2>
         <div id="survView"></div>
     </div>
 
     <div class="footer">
         <p>حقوق - دولة مارفل</p>
-        <p style="color:#666; font-size:0.85rem;">هيئة تنظيم الدورات</p>
+        <p style="color:#666; font-size:0.8rem;">هيئة تنظيم الدورات</p>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        let pass = prompt("الرمز:");
-        if (pass === "مشرف_2026") { document.body.style.display = "block"; } 
-        else { window.location.href = "index.html"; }
+        let pass = prompt("رمز الدخول:");
+        if (pass === "مشرف_2026") { document.body.style.display = "block"; } else { window.location.href="index.html"; }
 
         const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function upd(id, field, val) { db.ref('applications/' + id).update({ [field]: val }); }
+        function setVal(path, val) { db.ref(path).set(val); }
 
         db.ref().on('value', (snap) => {
-            const data = snap.val() || {};
-            const auth = data.authority_data || {};
-            const apps = data.applications || {};
+            const d = snap.val() || {};
+            const auth = d.authority_data || {};
+            const apps = d.applications || {};
 
-            let accH = ""; let passH = ""; let perH = "";
-            for(let id in apps) {
-                const a = apps[id];
+            // المواعيد
+            let scH = ""; for(let i in auth.courses) scH += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
+            document.querySelector('#mainSched tbody').innerHTML = scH;
+
+            // القبول والنتائج
+            let accH="", passH="", perH="";
+            for(let i in apps) {
+                const a = apps[i];
                 accH += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                    <button class="action-btn accept" onclick="upd('${id}','status','مقبول')">قبول</button>
-                    <button class="action-btn reject" onclick="upd('${id}','status','مرفوض')">رفض</button>
+                    <button class="btn-action btn-accept" onclick="setVal('applications/${i}/status','مقبول')">قبول</button>
+                    <button class="btn-action btn-reject" onclick="setVal('applications/${i}/status','مرفوض')">رفض</button>
+                    <span class="status-txt" style="color:${a.status==='مقبول'?'#2ecc71':'#e74c3c'}">الحالة: ${a.status}</span>
                 </td></tr>`;
+                
                 if(a.status === 'مقبول') {
                     passH += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                        <button class="action-btn accept" onclick="upd('${id}','pass','ناجح')">ناجح</button>
-                        <button class="action-btn reject" onclick="upd('${id}','pass','راسب')">راسب</button>
+                        <button class="btn-action btn-accept" onclick="setVal('applications/${i}/pass','ناجح')">ناجح</button>
+                        <button class="btn-action btn-reject" onclick="setVal('applications/${i}/pass','راسب')">راسب</button>
+                        <span class="status-txt">النتيجة: ${a.pass || 'بانتظار الدورة'}</span>
                     </td></tr>`;
-                    perH += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td style="color:var(--gold)">${a.period || '-'}</td></tr>`;
+                    perH += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td style="color:var(--gold)">${a.period}</td></tr>`;
                 }
             }
             document.getElementById('admAcc').innerHTML = accH;
             document.getElementById('admPass').innerHTML = passH;
             document.getElementById('admPeriods').innerHTML = perH;
 
-            let exH = ""; for(let id in auth.exams) exH += `<a href="${auth.exams[id].url}" target="_blank" class="btn-link">${auth.exams[id].course}</a>`;
-            document.getElementById('linksView').innerHTML = exH;
+            // روابط واستبيانات
+            let exH=""; for(let i in auth.exams) exH += `<a href="${auth.exams[i].url}" target="_blank" class="link-box">${auth.exams[i].course}</a>`;
+            document.getElementById('examsView').innerHTML = exH;
 
-            let coH = ""; for(let id in auth.correction) coH += `<a href="${auth.correction[id].url}" target="_blank" class="btn-link btn-correct">${auth.correction[id].course}</a>`;
-            document.getElementById('correctLinksView').innerHTML = coH;
+            let coH=""; for(let i in auth.correction) coH += `<a href="${auth.correction[i].url}" target="_blank" class="link-box link-corr">${auth.correction[i].course}</a>`;
+            document.getElementById('corrView').innerHTML = coH;
 
-            let svH = ""; for(let id in auth.surveys) svH += `<div class="survey-item"><b>دورة ${auth.surveys[id].course}:</b>${auth.surveys[id].url}</div>`;
-            document.getElementById('survView').innerHTML = svH || "لا توجد استبيانات";
+            let svH=""; for(let i in auth.surveys) svH += `<div class="survey-card"><b>دورة ${auth.surveys[i].course}:</b>${auth.surveys[i].url}</div>`;
+            document.getElementById('survView').innerHTML = svH;
         });
     </script>
 </body>
