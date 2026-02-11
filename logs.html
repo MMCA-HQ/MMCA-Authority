@@ -191,20 +191,46 @@
     }
 </script>
 
-<script src=""></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<script src=""></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+    authDomain: "mmca-authority.firebaseapp.com",
+    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
+    projectId: "mmca-authority",
+    storageBucket: "mmca-authority.firebasestorage.app",
+    messagingSenderId: "105278081999",
+    appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
+  };
 
-<script> const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", authDomain: "mmca-authority.firebaseapp.com", databaseURL: "", projectId: "mmca-authority", storageBucket: "mmca-authority.firebasestorage.app", messagingSenderId: "105278081999", appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba" };
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const db = firebase.database();
 
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } const db = firebase.database();
+  // وظيفة زر "تحديث الشروط"
+  function saveCond() {
+    const rulesVal = document.getElementById('e_cond').value;
+    db.ref('authority_data/rules').set(rulesVal).then(() => {
+      alert("✅ تمت المزامنة! اختفت كلمة null من السحاب.");
+    });
+  }
 
-function saveCond() { const rulesVal = document.getElementById('e_cond').value; db.ref('authority_data/rules').set(rulesVal).then(() => { alert("تمت المزامنة! اختفت كلمة null الآن."); }); }
+  // وظيفة زر "حفظ الدورة"
+  function saveItem(type) {
+    const name = document.getElementById('c_name').value;
+    const p1 = document.getElementById('c_p1').value;
+    const p2 = document.getElementById('c_p2').value;
 
-function saveItem(type) { const name = document.getElementById('c_name').value; const p1 = document.getElementById('c_p1').value; const p2 = document.getElementById('c_p2').value;
-
-} </script>
-
-</body> </html>
-
+    db.ref('authority_data/courses').set({
+      courseName: name,
+      period1: p1,
+      period2: p2
+    }).then(() => {
+      alert("✅ تم حفظ المواعيد وتحديث السحاب!");
+    });
+  }
+</script>
 
