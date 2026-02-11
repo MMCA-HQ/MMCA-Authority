@@ -21,14 +21,16 @@
 
     <div class="panel">
         <h2>شروط الدورات</h2>
-        <div id="disp_cond"></div>
+        <div id="disp_cond" style="white-space: pre-wrap;">جاري جلب الشروط من مكتب رئيس الهيئة...</div>
     </div>
 
     <div class="panel">
         <h2>مواعيد الدورات</h2>
         <table>
             <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
-            <tbody id="schedBody"></tbody>
+            <tbody id="schedBody">
+                <tr><td colspan="3">جاري تحميل المواعيد...</td></tr>
+            </tbody>
         </table>
     </div>
 
@@ -37,140 +39,74 @@
         <form id="applyForm">
             <input type="text" id="name" placeholder="الاسم الكامل" required>
             <input type="text" id="code" placeholder="الكود العسكري" required>
-            <select id="courseSelect" onchange="updatePeriods()" required><option value="">-- اختر الدورة --</option></select>
-            <select id="periodSelect" required disabled><option value="">-- اختر الموعد --</option></select>
+            <select id="courseSelect" required>
+                <option value="">-- اختر الدورة --</option>
+            </select>
             <button type="submit" class="btn-submit">إرسال الطلب الرسمي</button>
         </form>
     </div>
 
-    <div class="panel">
-        <h2>نتائج القبول المبدئي</h2>
-        <table id="accTable">
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <div class="panel">
-        <h2>نتائج اجتياز الدورات</h2>
-        <table id="passTable">
-            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
     <div class="footer">جميع الحقوق محفوظة © 2026 - دولة مارفل</div>
 
-<script>
-    function sync() {
-        document.getElementById('disp_cond').innerHTML = localStorage.getItem('m_cond') || 'لا توجد شروط حالياً.';
-        const courses = JSON.parse(localStorage.getItem('m_courses') || '[]');
-        const apps = JSON.parse(localStorage.getItem('m_apps') || '[]');
-        
-        document.getElementById('schedBody').innerHTML = courses.map(c => `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`).join('');
-        const cSel = document.getElementById('courseSelect');
-        cSel.innerHTML = '<option value="">-- اختر الدورة --</option>' + courses.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-        document.querySelector('#accTable tbody').innerHTML = apps.map(a => `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${a.status}</td></tr>`).join('');
-        
-        // تعديل العرض ليظهر "اجتياز" أو "عدم اجتياز" فقط
-        document.querySelector('#passTable tbody').innerHTML = apps.filter(a => a.status === 'مقبول').map(a => `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><b>${a.pass}</b></td></tr>`).join('');
-    }
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
+        };
 
-    function updatePeriods() {
-        const selCourse = document.getElementById('courseSelect').value;
-        const courses = JSON.parse(localStorage.getItem('m_courses') || '[]');
-        const c = courses.find(x => x.name === selCourse);
-        const pSel = document.getElementById('periodSelect');
-        if(c) { pSel.innerHTML = `<option value="${c.p1}">فترة 1: ${c.p1}</option><option value="${c.p2}">فترة 2: ${c.p2}</option>`; pSel.disabled = false; }
-    }
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
 
-    document.getElementById('applyForm').onsubmit = function(e) {
-        e.preventDefault();
-        const apps = JSON.parse(localStorage.getItem('m_apps') || '[]');
-        apps.push({ name: document.getElementById('name').value, code: document.getElementById('code').value, course: document.getElementById('courseSelect').value, status: 'تحت المراجعة', pass: 'بانتظار الدورة' });
-        localStorage.setItem('m_apps', JSON.stringify(apps));
-        alert('تم التقديم'); sync();
-    };
-    window.onload = sync;
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+        // وظيفة المزامنة السحابية الحية
+        db.ref('authority_data').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // 1. تحديث الشروط
+                if (data.rules) {
+                    document.getElementById('disp_cond').innerText = data.rules;
+                }
 
-<script>
-  // 2. إعدادات الاتصال (نفس الإعدادات السابقة)
-  const firebaseConfig = {
-    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
-    authDomain: "mmca-authority.firebaseapp.com",
-    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
-    projectId: "mmca-authority",
-    storageBucket: "mmca-authority.firebasestorage.app",
-    messagingSenderId: "105278081999",
-    appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
-  };
-
-  // 3. تهيئة Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // 4. وظيفة "الاستماع" للبيانات وتحديث الصفحة تلقائياً
-  // هذا الكود يراقب أي تغيير في Firebase ويحدث الشاشة فوراً
-  db.ref('authority_data').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      // تأكد أن الـ IDs التالية مطابقة لما هو موجود في الـ HTML الخاص بك
-      const rulesDisplay = document.getElementById('rulesDisplay');
-      const datesDisplay = document.getElementById('datesDisplay');
-
-      if(rulesDisplay) rulesDisplay.innerText = data.rules;
-      if(datesDisplay) datesDisplay.innerText = data.dates;
-    }
-  });
-
-  // وظيفة إضافية لإرسال طلبات التقديم إلى السحاب (اختياري حالياً)
-  function submitApplication() {
-    const name = document.getElementById('applicantName').value;
-    const discord = document.getElementById('applicantDiscord').value;
-
-    if(name && discord) {
-        db.ref('applications').push({
-            name: name,
-            discord: discord,
-            status: 'قيد الانتظار',
-            timestamp: new Date().toLocaleString()
-        }).then(() => {
-            alert("تم إرسال طلبك إلى قيادة الهيئة بنجاح!");
+                // 2. تحديث جدول المواعيد والقائمة المنسدلة
+                if (data.courses) {
+                    const c = data.courses;
+                    // تحديث الجدول
+                    document.getElementById('schedBody').innerHTML = `
+                        <tr>
+                            <td>${c.courseName}</td>
+                            <td>${c.period1}</td>
+                            <td>${c.period2}</td>
+                        </tr>`;
+                    
+                    // تحديث قائمة الاختيار في الفورم
+                    document.getElementById('courseSelect').innerHTML = `
+                        <option value="">-- اختر الدورة --</option>
+                        <option value="${c.courseName}">${c.courseName}</option>`;
+                }
+            }
         });
-    } else {
-        alert("يرجى تعبئة كافة الحقول!");
-    }
-  }
-</script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
-    databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
-  };
+        // إرسال الطلبات (يتم تخزينها في السحاب أيضاً)
+        document.getElementById('applyForm').onsubmit = function(e) {
+            e.preventDefault();
+            const applicantName = document.getElementById('name').value;
+            const applicantCode = document.getElementById('code').value;
+            const selectedCourse = document.getElementById('courseSelect').value;
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  const db = firebase.database();
-
-  // جلب البيانات فوراً عند أي تغيير في السحاب
-  db.ref('authority_data').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      // عرض الشروط
-      if(data.rules && document.getElementById('rulesDisplay')) {
-        document.getElementById('rulesDisplay').innerText = data.rules;
-      }
-      // عرض بيانات الدورة
-      if(data.courses && document.getElementById('courseNameDisplay')) {
-        document.getElementById('courseNameDisplay').innerText = data.courses.courseName;
-      }
-    }
-  });
-</script>
+            db.ref('incoming_applications').push({
+                name: applicantName,
+                code: applicantCode,
+                course: selectedCourse,
+                time: new Date().toLocaleString()
+            }).then(() => {
+                alert('✅ تم إرسال طلبك العسكري بنجاح');
+                document.getElementById('applyForm').reset();
+            });
+        };
+    </script>
+</body>
+</html>
