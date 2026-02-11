@@ -145,7 +145,6 @@
     }
   }
 </script>
-</body>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -160,20 +159,18 @@
   }
   const db = firebase.database();
 
-  // جلب البيانات وتحديث الصفحة تلقائياً
+  // جلب البيانات فوراً عند أي تغيير في السحاب
   db.ref('authority_data').on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
-      // تحديث نص الشروط في الصفحة
-      if (data.rules && document.getElementById('rulesDisplay')) {
+      // عرض الشروط
+      if(data.rules && document.getElementById('rulesDisplay')) {
         document.getElementById('rulesDisplay').innerText = data.rules;
       }
-      // تحديث بيانات الدورة في الصفحة
-      if (data.courses && document.getElementById('courseNameDisplay')) {
+      // عرض بيانات الدورة
+      if(data.courses && document.getElementById('courseNameDisplay')) {
         document.getElementById('courseNameDisplay').innerText = data.courses.courseName;
       }
     }
   });
 </script>
-</body>
-</html>
