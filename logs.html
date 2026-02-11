@@ -5,98 +5,172 @@
     <title>لوحة الرئيس | دولة مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 25px; border-radius: 5px; }
-        h2 { color: var(--gold); border-bottom: 1px solid var(--army); padding-bottom: 10px; margin-bottom: 15px; }
-        input, textarea { background: #000; color: #fff; border: 1px solid var(--army); padding: 10px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
-        .btn-add { background: var(--gold); color: #000; padding: 10px; border: none; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 15px; }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 4px 8px; cursor: pointer; border-radius: 3px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-        th, td { border: 1px solid var(--army); padding: 8px; text-align: center; }
-        .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
-        .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; line-height: 1.6; }
+        
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h2 { color: var(--gold); border-bottom: 2px solid var(--army); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.3rem; }
+        
+        input, textarea { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; font-family: Tahoma; }
+        input:focus, textarea:focus { border-color: var(--gold); outline: none; }
+        
+        .btn-add { background: var(--gold); color: #000; padding: 12px; border: none; cursor: pointer; font-weight: bold; width: 100%; border-radius: 4px; transition: 0.3s; font-size: 1rem; }
+        .btn-add:hover { background: #e0b869; transform: translateY(-2px); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #080905; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
+        th { background: #1a1d12; color: var(--gold); }
+        
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 3px; transition: 0.3s; }
+        .btn-del:hover { background: #c0392b; }
+
+        .footer { margin-top: 60px; padding: 25px; border-top: 2px solid var(--army); text-align: center; background: #0b0c08; }
+        .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; font-size: 1.1rem; }
+        .footer .sub-text { color: #666; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <h1 style="text-align: center; color: var(--gold);">الإدارة العليا - دولة مارفل</h1>
+
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px; text-shadow: 2px 2px #000;">لوحة الإدارة العليا - دولة مارفل</h1>
 
     <div class="panel">
-        <h2>1. تعديل الشروط والضوابط</h2>
-        <textarea id="rulesText" rows="4" placeholder="اكتب الشروط هنا..."></textarea>
-        <button class="btn-add" onclick="saveRules()">حفظ الشروط</button>
+        <h2>| تعديل الشروط والضوابط</h2>
+        <textarea id="rulesText" rows="6" placeholder="اكتب القوانين والشروط العسكرية هنا..."></textarea>
+        <button class="btn-add" onclick="saveRules()">حفظ الشروط المحدثة</button>
     </div>
 
     <div class="panel">
-        <h2>2. إدارة الدورات والمواعيد</h2>
-        <input type="text" id="cn" placeholder="اسم الدورة">
-        <input type="text" id="cp1" placeholder="الفترة الأولى">
-        <input type="text" id="cp2" placeholder="الفترة الثانية">
-        <button class="btn-add" onclick="addItem('courses',{name:v('cn'),p1:v('cp1'),p2:v('cp2')})">إضافة دورة</button>
-        <table id="t-courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>حذف</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة الدورات والمواعيد</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <input type="text" id="courseName" placeholder="اسم الدورة">
+            <input type="text" id="period1" placeholder="الفترة الأولى">
+            <input type="text" id="period2" placeholder="الفترة الثانية">
+        </div>
+        <button class="btn-add" onclick="addItem('courses', {name: v('courseName'), p1: v('period1'), p2: v('period2')})">إضافة الدورة للقائمة</button>
+        <table id="table-courses">
+            <thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>التحكم</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>3. إدارة روابط الاختبارات</h2>
-        <input type="text" id="en" placeholder="اسم الدورة">
-        <input type="text" id="eu" placeholder="رابط الاختبار">
-        <button class="btn-add" onclick="addItem('exams',{course:v('en'),url:v('eu')})">إضافة اختبار</button>
-        <table id="t-exams"><thead><tr><th>الدورة</th><th>الرابط</th><th>حذف</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة روابط الاختبارات</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="examCourse" placeholder="اسم الدورة">
+            <input type="text" id="examUrl" placeholder="رابط الاختبار">
+        </div>
+        <button class="btn-add" onclick="addItem('exams', {course: v('examCourse'), url: v('examUrl')})">إضافة رابط الاختبار</button>
+        <table id="table-exams">
+            <thead><tr><th>الدورة</th><th>الرابط</th><th>التحكم</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>4. إدارة روابط التصحيح</h2>
-        <input type="text" id="con" placeholder="اسم الدورة">
-        <input type="text" id="cou" placeholder="رابط التصحيح">
-        <button class="btn-add" onclick="addItem('correction',{course:v('con'),url:v('cou')})">إضافة تصحيح</button>
-        <table id="t-correction"><thead><tr><th>الدورة</th><th>الرابط</th><th>حذف</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة روابط التصحيح</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="corrCourse" placeholder="اسم الدورة">
+            <input type="text" id="corrUrl" placeholder="رابط التصحيح">
+        </div>
+        <button class="btn-add" onclick="addItem('correction', {course: v('corrCourse'), url: v('corrUrl')})">إضافة رابط التصحيح</button>
+        <table id="table-correction">
+            <thead><tr><th>الدورة</th><th>الرابط</th><th>التحكم</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>5. إدارة استبيانات الدورات (نصوص)</h2>
-        <input type="text" id="sn" placeholder="اسم الدورة">
-        <textarea id="su" placeholder="نص الاستبيان..."></textarea>
-        <button class="btn-add" onclick="addItem('surveys',{course:v('sn'),url:v('su')})">إضافة استبيان</button>
-        <table id="t-surveys"><thead><tr><th>الدورة</th><th>النص</th><th>حذف</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة استبيانات الدورات (نصوص)</h2>
+        <input type="text" id="survCourse" placeholder="اسم الدورة">
+        <textarea id="survText" rows="3" placeholder="أدخل نص الاستبيان هنا..."></textarea>
+        <button class="btn-add" onclick="addItem('surveys', {course: v('survCourse'), url: v('survText')})">إضافة الاستبيان النصي</button>
+        <table id="table-surveys">
+            <thead><tr><th>الدورة</th><th>المحتوى النصي</th><th>التحكم</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="footer">
         <p>حقوق - دولة مارفل</p>
-        <p style="color:#666; font-size:0.8rem;">هيئة تنظيم الدورات</p>
+        <p class="sub-text">هيئة تنظيم الدورات</p>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script>
-        let p = prompt("الرمز السري:");
-        if (p === "رئيس_2026") { document.body.style.display="block"; } else { window.location.href="index.html"; }
 
-        const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
+    <script>
+        // التحقق من الهوية
+        let pass = prompt("الرمز السري للإدارة العليا:");
+        if (pass === "رئيس_2026") {
+            document.body.style.display = "block";
+        } else {
+            alert("وصول غير مصرح به.");
+            window.location.href = "index.html";
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // دوال مساعدة
         const v = (id) => document.getElementById(id).value;
-        function saveRules() { db.ref('authority_data/rules').set(v('rulesText')); alert("تم الحفظ"); }
-        function addItem(path, obj) { db.ref('authority_data/'+path).push(obj); alert("تمت الإضافة"); }
-        function delItem(path, id) { if(confirm("حذف؟")) db.ref('authority_data/'+path+'/'+id).remove(); }
+        const clear = (ids) => ids.forEach(id => document.getElementById(id).value = "");
 
+        // حفظ الشروط
+        function saveRules() {
+            db.ref('authority_data/rules').set(v('rulesText'))
+            .then(() => alert("تم تحديث الشروط بنجاح"));
+        }
+
+        // إضافة عنصر جديد
+        function addItem(path, data) {
+            if(Object.values(data).some(x => x === "")) return alert("يرجى تعبئة جميع الحقول");
+            db.ref('authority_data/' + path).push(data)
+            .then(() => {
+                alert("تمت الإضافة بنجاح");
+                // مسح الحقول بعد الإضافة بناءً على المسار
+                if(path === 'courses') clear(['courseName', 'period1', 'period2']);
+                if(path === 'exams') clear(['examCourse', 'examUrl']);
+                if(path === 'correction') clear(['corrCourse', 'corrUrl']);
+                if(path === 'surveys') clear(['survCourse', 'survText']);
+            });
+        }
+
+        // حذف عنصر
+        function delItem(path, id) {
+            if(confirm("هل أنت متأكد من حذف هذا العنصر نهائياً؟")) {
+                db.ref('authority_data/' + path + '/' + id).remove();
+            }
+        }
+
+        // جلب البيانات وعرضها في الجداول (الترتيب والتحكم)
         db.ref('authority_data').on('value', (snap) => {
             const data = snap.val() || {};
+            
+            // عرض الشروط
             document.getElementById('rulesText').value = data.rules || "";
 
-            const draw = (path, target, keys) => {
-                let h = "";
-                for(let i in data[path]) {
-                    h += "<tr>";
-                    keys.forEach(k => h += `<td>${data[path][i][k]}</td>`);
-                    h += `<td><button class="btn-del" onclick="delItem('${path}','${i}')">حذف</button></td></tr>`;
+            // دالة الرسم للجداول
+            const drawTable = (path, tableId, fields) => {
+                let html = "";
+                const items = data[path] || {};
+                for(let key in items) {
+                    html += "<tr>";
+                    fields.forEach(f => {
+                        html += `<td>${items[key][f]}</td>`;
+                    });
+                    html += `<td><button class="btn-del" onclick="delItem('${path}','${key}')">حذف</button></td></tr>`;
                 }
-                document.querySelector(`#${target} tbody`).innerHTML = h;
+                document.querySelector(`#${tableId} tbody`).innerHTML = html;
             };
 
-            draw('courses', 't-courses', ['name','p1','p2']);
-            draw('exams', 't-exams', ['course','url']);
-            draw('correction', 't-correction', ['course','url']);
-            draw('surveys', 't-surveys', ['course','url']);
+            // تحديث جميع الجداول
+            drawTable('courses', 'table-courses', ['name', 'p1', 'p2']);
+            drawTable('exams', 'table-exams', ['course', 'url']);
+            drawTable('correction', 'table-correction', ['course', 'url']);
+            drawTable('surveys', 'table-surveys', ['course', 'url']);
         });
     </script>
 </body>
