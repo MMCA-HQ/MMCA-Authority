@@ -7,29 +7,24 @@
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; --gray: #1a1d12; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         
-        /* الحاويات الرئيسية */
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
         h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.4rem; }
         
-        /* تنسيق صف المدخلات */
-        .input-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: stretch; }
-        .input-row input, .input-row textarea { 
+        /* تنسيق الحقول كما في الصورة المرفقة */
+        .admin-controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: stretch; flex-direction: row-reverse; }
+        input, textarea { 
             background: #000; color: #fff; border: 1px solid #333; padding: 12px; 
             border-radius: 4px; flex: 1; font-family: Tahoma; text-align: center;
         }
-        .input-row textarea { text-align: right; resize: vertical; height: 45px; }
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 0 20px; cursor: pointer; font-weight: bold; border-radius: 4px; min-width: 120px; }
         
-        /* الأزرار */
-        .btn-main { background: var(--gold); color: #000; border: none; padding: 0 25px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-        .btn-main:hover { background: #e0b869; }
-        .btn-edit { background: #3498db; color: #fff; border: none; padding: 6px 15px; cursor: pointer; border-radius: 4px; margin-left: 5px; }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 6px 15px; cursor: pointer; border-radius: 4px; }
-
         /* الجداول */
-        table { width: 100%; border-collapse: collapse; background: #080905; margin-top: 10px; }
-        th, td { border: 1px solid var(--gray); padding: 12px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: #080905; }
+        th, td { border: 1px solid #1a1d12; padding: 12px; text-align: center; }
         th { color: var(--gold); background: #0d0e0a; font-weight: normal; }
-        tr:hover { background: #11140c; }
+        
+        .btn-edit { background: #3498db; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-left: 5px; }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
 
         .footer { margin-top: 50px; padding: 25px; border-top: 1px solid var(--army); text-align: center; }
         .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
@@ -37,68 +32,69 @@
 </head>
 <body>
 
-    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px; letter-spacing: 2px;">| لوحة التحكم العليا - دولة مارفل |</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة التحكم العليا</h1>
 
     <div class="panel">
         <h2>| تعديل الشروط والضوابط</h2>
-        <textarea id="rulesText" style="width: 100%; height: 120px; margin-bottom: 10px;" placeholder="أدخل نص الشروط هنا..."></textarea>
-        <button class="btn-main" style="width: 100%; height: 45px;" onclick="saveRules()">حفظ الشروط والضوابط</button>
+        <textarea id="rulesText" style="width: 100%; height: 100px; margin-bottom: 10px;"></textarea>
+        <button class="btn-main" style="width: 100%; height: 45px;" onclick="saveRules()">حفظ الشروط</button>
     </div>
 
     <div class="panel">
         <h2>| إدارة الدورات والمواعيد</h2>
-        <div class="input-row">
+        <div class="admin-controls">
             <button class="btn-main" onclick="saveData('courses')">إضافة / تحديث</button>
             <input type="text" id="c_p2" placeholder="الفترة 2">
             <input type="text" id="c_p1" placeholder="الفترة 1">
             <input type="text" id="c_name" placeholder="اسم الدورة">
+            <input type="number" id="c_order" placeholder="الترتيب" value="99">
             <input type="hidden" id="c_id">
         </div>
-        <table id="t_courses">
-            <thead><tr><th style="width: 30%;">الدورة</th><th style="width: 25%;">الفترة 1</th><th style="width: 25%;">الفترة 2</th><th>التحكم</th></tr></thead>
-            <tbody></tbody>
+        <table>
+            <thead><tr><th>الترتيب</th><th>الدورة</th><th>ف 1</th><th>ف 2</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_courses"></tbody>
         </table>
     </div>
 
     <div class="panel">
         <h2>| إدارة روابط الاختبارات</h2>
-        <div class="input-row">
+        <div class="admin-controls">
             <button class="btn-main" onclick="saveData('exams')">إضافة / تحديث</button>
             <input type="text" id="e_url" placeholder="رابط الاختبار (URL)">
             <input type="text" id="e_name" placeholder="اسم الدورة">
             <input type="hidden" id="e_id">
         </div>
-        <table id="t_exams">
-            <thead><tr><th>اسم الدورة</th><th>الرابط</th><th>التحكم</th></tr></thead>
-            <tbody></tbody>
+        <table>
+            <thead><tr><th>اسم الدورة</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_exams"></tbody>
         </table>
     </div>
 
     <div class="panel">
         <h2>| إدارة روابط التصحيح</h2>
-        <div class="input-row">
+        <div class="admin-controls">
             <button class="btn-main" onclick="saveData('correction')">إضافة / تحديث</button>
             <input type="text" id="co_url" placeholder="رابط التصحيح (URL)">
             <input type="text" id="co_name" placeholder="اسم الدورة">
             <input type="hidden" id="co_id">
         </div>
-        <table id="t_correction">
-            <thead><tr><th>اسم الدورة</th><th>الرابط</th><th>التحكم</th></tr></thead>
-            <tbody></tbody>
+        <table>
+            <thead><tr><th>اسم الدورة</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_correction"></tbody>
         </table>
     </div>
 
     <div class="panel">
         <h2>| إدارة استبيانات الدورات (نصوص)</h2>
-        <div class="input-row">
+        <div class="admin-controls">
             <button class="btn-main" onclick="saveData('surveys')">إضافة / تحديث</button>
-            <textarea id="s_text" placeholder="اكتب نص الاستبيان هنا..."></textarea>
-            <input type="text" id="s_name" placeholder="اسم الدورة" style="max-width: 250px;">
+            <textarea id="s_text" placeholder="نص الاستبيان"></textarea>
+            <input type="text" id="s_name" placeholder="اسم الدورة">
             <input type="hidden" id="s_id">
         </div>
-        <table id="t_surveys">
-            <thead><tr><th style="width: 20%;">الدورة</th><th>محتوى الاستبيان</th><th style="width: 150px;">التحكم</th></tr></thead>
-            <tbody></tbody>
+        <table id="tbody_surveys_table">
+            <thead><tr><th>الدورة</th><th>النص</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_surveys"></tbody>
         </table>
     </div>
 
@@ -110,7 +106,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        let p = prompt("الرمز السري للإدارة:");
+        let p = prompt("الرمز:");
         if (p === "رئيس_2026") { document.body.style.display="block"; } else { window.location.href="index.html"; }
 
         const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
@@ -125,65 +121,61 @@
             let obj = {};
 
             if(path === 'courses') {
-                obj = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
+                obj = { order: document.getElementById('c_order').value, name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
             } else if(path === 'surveys') {
                 obj = { course: document.getElementById('s_name').value, url: document.getElementById('s_text').value };
             } else {
                 obj = { course: document.getElementById(pre+'_name').value, url: document.getElementById(pre+'_url').value };
             }
 
-            if(id) {
-                db.ref('authority_data/'+path+'/'+id).update(obj).then(() => alert("تم التحديث"));
-            } else {
-                db.ref('authority_data/'+path).push(obj).then(() => alert("تمت الإضافة"));
-            }
+            if(id) { db.ref('authority_data/'+path+'/'+id).update(obj); } 
+            else { db.ref('authority_data/'+path).push(obj); }
             clearFields(pre);
         }
 
-        function deleteItem(path, id) { if(confirm("حذف نهائي؟")) db.ref('authority_data/'+path+'/'+id).remove(); }
+        function deleteItem(path, id) { if(confirm("حذف؟")) db.ref('authority_data/'+path+'/'+id).remove(); }
 
         function editItem(path, id, data) {
             let pre = path === 'courses' ? 'c' : path === 'exams' ? 'e' : path === 'correction' ? 'co' : 's';
             document.getElementById(pre+'_id').value = id;
             if(path === 'courses') {
-                document.getElementById('c_name').value = data.name;
-                document.getElementById('c_p1').value = data.p1;
-                document.getElementById('c_p2').value = data.p2;
+                document.getElementById('c_name').value = data.name; document.getElementById('c_p1').value = data.p1;
+                document.getElementById('c_p2').value = data.p2; document.getElementById('c_order').value = data.order;
             } else if(path === 'surveys') {
-                document.getElementById('s_name').value = data.course;
-                document.getElementById('s_text').value = data.url;
+                document.getElementById('s_name').value = data.course; document.getElementById('s_text').value = data.url;
             } else {
-                document.getElementById(pre+'_name').value = data.course;
-                document.getElementById(pre+'_url').value = data.url;
+                document.getElementById(pre+'_name').value = data.course; document.getElementById(pre+'_url').value = data.url;
             }
         }
 
         function clearFields(pre) {
-            let fields = pre === 'c' ? ['c_id','c_name','c_p1','c_p2'] : pre === 's' ? ['s_id','s_name','s_text'] : [pre+'_id', pre+'_name', pre+'_url'];
-            fields.forEach(f => document.getElementById(f).value = "");
+            let f = pre === 'c' ? ['c_id','c_name','c_p1','c_p2','c_order'] : pre === 's' ? ['s_id','s_name','s_text'] : [pre+'_id', pre+'_name', pre+'_url'];
+            f.forEach(i => document.getElementById(i).value = (i.includes('order') ? "99" : ""));
         }
 
         db.ref('authority_data').on('value', (snap) => {
             const data = snap.val() || {};
             document.getElementById('rulesText').value = data.rules || "";
 
-            const draw = (path, tId, keys) => {
-                let h = "";
+            ['courses', 'exams', 'correction', 'surveys'].forEach(path => {
+                let html = "";
                 for(let i in data[path]) {
-                    h += "<tr>";
-                    keys.forEach(k => h += `<td>${data[path][i][k]}</td>`);
-                    h += `<td>
-                        <button class="btn-edit" onclick='editItem("${path}","${i}",${JSON.stringify(data[path][i])})'>تعديل</button>
+                    let item = data[path][i];
+                    html += `<tr>`;
+                    if(path === 'courses') {
+                        html += `<td>${item.order}</td><td>${item.name}</td><td>${item.p1}</td><td>${item.p2}</td>`;
+                    } else if(path === 'surveys') {
+                        html += `<td>${item.course}</td><td>${item.url.substring(0,20)}...</td>`;
+                    } else {
+                        html += `<td>${item.course}</td>`; // هنا تم إخفاء الرابط الطويل والاكتفاء باسم الدورة
+                    }
+                    html += `<td>
+                        <button class="btn-edit" onclick='editItem("${path}","${i}",${JSON.stringify(item)})'>تعديل</button>
                         <button class="btn-del" onclick="deleteItem('${path}','${i}')">حذف</button>
                     </td></tr>`;
                 }
-                document.querySelector(`#${tId} tbody`).innerHTML = h;
-            };
-
-            draw('courses', 't_courses', ['name','p1','p2']);
-            draw('exams', 't_exams', ['course','url']);
-            draw('correction', 't_correction', ['course','url']);
-            draw('surveys', 't_surveys', ['course','url']);
+                document.getElementById('tbody_'+path).innerHTML = html;
+            });
         });
     </script>
 </body>
