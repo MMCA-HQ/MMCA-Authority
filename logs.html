@@ -2,107 +2,108 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>رئيس الهيئة | الإدارة والتحرير</title>
+    <title>إدارة الهيئة | التحكم السحابي</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
-        .boss-panel { border: 2px solid var(--gold); padding: 15px; background: #14160f; margin-bottom: 20px; text-align: right; border-radius: 8px; }
-        h3 { color: var(--gold); margin-top: 0; border-bottom: 1px solid var(--army); padding-bottom: 10px; }
-        input, textarea { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; margin: 8px 0; box-sizing: border-box; border-radius: 4px; }
-        .btn { background: var(--gold); color: #000; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border: none; margin-top: 5px; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
-        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
-        th { color: var(--gold); }
-        .footer { margin-top: 50px; text-align: center; color: #444; font-size: 0.8rem; border-top: 1px solid #222; padding-top: 20px; }
+        .boss-panel { border: 2px solid var(--gold); padding: 15px; background: #14160f; margin-bottom: 20px; border-radius: 8px; }
+        h3 { color: var(--gold); border-bottom: 1px solid var(--army); padding-bottom: 10px; }
+        input, textarea { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .btn { background: var(--gold); color: #000; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 5px; }
+        .item-list { margin-top: 15px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-right: 4px solid var(--gold); }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align: center; color: var(--gold);">مكتب رئيس الهيئة - الإدارة والتحكم</h1>
-
-    <script>
-        let pass = prompt("الرجاء إدخال الرمز السري للوصول إلى السجلات:");
-        if (pass !== "رئيس_2026") { 
-            alert("دخول غير مصرح!");
-            window.location.href = "index.html";
-        }
-    </script>
+    <h1 style="text-align: center; color: var(--gold);">لوحة تحكم رئيس الهيئة</h1>
 
     <div class="boss-panel">
-        <h3>شروط الالتحاق بالدورات</h3>
-        <textarea id="e_cond" rows="4" placeholder="اكتب الشروط هنا..."></textarea>
-        <button class="btn" onclick="saveCond()">تحديث الشروط ونشرها</button>
+        <h3>1. شروط الالتحاق</h3>
+        <textarea id="e_cond" rows="3"></textarea>
+        <button class="btn" onclick="saveRules()">تحديث الشروط العامة</button>
     </div>
 
     <div class="boss-panel">
-        <h3>إدارة مواعيد الدورات</h3>
+        <h3>2. إدارة مواعيد الدورات (إضافة وحذف)</h3>
         <input type="text" id="c_name" placeholder="اسم الدورة">
-        <input type="text" id="c_p1" placeholder="موعد الفترة 1">
-        <input type="text" id="c_p2" placeholder="موعد الفترة 2">
-        <button class="btn" style="background:#2ecc71" onclick="saveCourse()">حفظ الدورة ونشر المواعيد</button>
+        <input type="text" id="c_p1" placeholder="الفترة الأولى">
+        <input type="text" id="c_p2" placeholder="الفترة الثانية">
+        <button class="btn" style="background:#2ecc71" onclick="addItem('courses', {name: c_name.value, p1: c_p1.value, p2: c_p2.value})">إضافة دورة جديدة +</button>
+        <div id="list_courses" class="item-list"></div>
     </div>
 
-    <div class="footer">جميع الحقوق محفوظة © 2026 - دولة مارفل</div>
+    <div class="boss-panel">
+        <h3>3. روابط الاختبارات</h3>
+        <input type="text" id="l_title" placeholder="عنوان الرابط">
+        <input type="text" id="l_url" placeholder="الرابط (URL)">
+        <button class="btn" style="background:#3498db; color:#fff" onclick="addItem('links', {title: l_title.value, url: l_url.value})">إضافة رابط +</button>
+        <div id="list_links" class="item-list"></div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
-            authDomain: "mmca-authority.firebaseapp.com",
-            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com",
-            projectId: "mmca-authority",
-            storageBucket: "mmca-authority.firebasestorage.app",
-            messagingSenderId: "105278081999",
-            appId: "1:105278081999:web:e1864fd2c50ebe116ca0ba"
+            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
         };
-
-        // تفعيل Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. وظيفة تحديث الشروط (تطرد null فوراً)
-        function saveCond() {
-            const rulesVal = document.getElementById('e_cond').value;
-            if (!rulesVal) { alert("الرجاء كتابة الشروط أولاً"); return; }
-            
-            db.ref('authority_data/rules').set(rulesVal).then(() => {
-                alert("✅ تم التحديث! اختفت كلمة null من السحاب وظهرت نصوصك.");
-            }).catch(err => alert("خطأ في الاتصال: " + err));
+        // حفظ الشروط
+        function saveRules() {
+            db.ref('authority_data/rules').set(document.getElementById('e_cond').value);
+            alert("تم تحديث الشروط");
         }
 
-        // 2. وظيفة حفظ الدورة
-        function saveCourse() {
-            const name = document.getElementById('c_name').value;
-            const p1 = document.getElementById('c_p1').value;
-            const p2 = document.getElementById('c_p2').value;
-
-            if (!name) { alert("الرجاء إدخال اسم الدورة"); return; }
-
-            db.ref('authority_data/courses').set({
-                courseName: name,
-                period1: p1,
-                period2: p2
-            }).then(() => {
-                alert("✅ تم نشر مواعيد الدورة بنجاح!");
-            }).catch(err => alert("خطأ في الاتصال: " + err));
+        // إضافة عنصر جديد للقائمة (دورة أو رابط)
+        function addItem(path, data) {
+            if(!data.name && !data.title) return alert("يرجى ملء البيانات");
+            db.ref('authority_data/' + path).push(data);
+            alert("تمت الإضافة بنجاح");
         }
 
-        // جلب البيانات الحالية عند فتح الصفحة لرؤيتها في المربعات
+        // حذف عنصر
+        function deleteItem(path, id) {
+            if(confirm("هل تريد حذف هذا العنصر نهائياً؟")) {
+                db.ref('authority_data/' + path + '/' + id).remove();
+            }
+        }
+
+        // عرض القوائم وتحديثها حياً
         db.ref('authority_data').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                if (data.rules) document.getElementById('e_cond').value = data.rules;
-                if (data.courses) {
-                    document.getElementById('c_name').value = data.courses.courseName || '';
-                    document.getElementById('c_p1').value = data.courses.period1 || '';
-                    document.getElementById('c_p2').value = data.courses.period2 || '';
+            if(!data) return;
+
+            // عرض الشروط
+            document.getElementById('e_cond').value = data.rules || "";
+
+            // عرض الدورات
+            let courseHtml = "";
+            if(data.courses) {
+                for(let id in data.courses) {
+                    courseHtml += `<div class="item-row">
+                        <span>${data.courses[id].name} (${data.courses[id].p1})</span>
+                        <button class="btn-del" onclick="deleteItem('courses', '${id}')">حذف</button>
+                    </div>`;
                 }
             }
+            document.getElementById('list_courses').innerHTML = courseHtml;
+
+            // عرض الروابط
+            let linkHtml = "";
+            if(data.links) {
+                for(let id in data.links) {
+                    linkHtml += `<div class="item-row">
+                        <span>${data.links[id].title}</span>
+                        <button class="btn-del" onclick="deleteItem('links', '${id}')">حذف</button>
+                    </div>`;
+                }
+            }
+            document.getElementById('list_links').innerHTML = linkHtml;
         });
     </script>
 </body>
