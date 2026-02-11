@@ -13,7 +13,6 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #000; }
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
-        .footer { margin-top: 50px; padding: 20px; border-top: 1px solid #222; color: #666; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -21,7 +20,7 @@
 
     <div class="panel">
         <h2>شروط الدورات</h2>
-        <div id="disp_cond" style="white-space: pre-wrap;">جاري جلب الشروط من مكتب رئيس الهيئة...</div>
+        <div id="rulesDisplay" style="white-space: pre-wrap; min-height: 50px;">جاري جلب البيانات من السحاب...</div>
     </div>
 
     <div class="panel">
@@ -29,82 +28,53 @@
         <table>
             <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
             <tbody id="schedBody">
-                <tr><td colspan="3">جاري تحميل المواعيد...</td></tr>
+                <tr><td colspan="3" id="courseStatus">بانتظار تحديثات القائد...</td></tr>
             </tbody>
         </table>
     </div>
-
-    <div class="panel">
-        <h2>استمارة طلب الالتحاق</h2>
-        <form id="applyForm">
-            <input type="text" id="name" placeholder="الاسم الكامل" required>
-            <input type="text" id="code" placeholder="الكود العسكري" required>
-            <select id="courseSelect" required>
-                <option value="">-- اختر الدورة --</option>
-            </select>
-            <button type="submit" class="btn-submit">إرسال الطلب الرسمي</button>
-        </form>
-    </div>
-
-    <div class="footer">جميع الحقوق محفوظة © 2026 - دولة مارفل</div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
+        // 1. إعدادات الاتصال
         const firebaseConfig = {
             apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
             databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
         };
 
+        // 2. تهيئة الاتصال
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
 
-        // وظيفة المزامنة السحابية الحية
-        db.ref('authority_data').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // 1. تحديث الشروط
-                if (data.rules) {
-                    document.getElementById('disp_cond').innerText = data.rules;
-                }
-
-                // 2. تحديث جدول المواعيد والقائمة المنسدلة
-                if (data.courses) {
-                    const c = data.courses;
-                    // تحديث الجدول
-                    document.getElementById('schedBody').innerHTML = `
-                        <tr>
-                            <td>${c.courseName}</td>
-                            <td>${c.period1}</td>
-                            <td>${c.period2}</td>
-                        </tr>`;
+        // 3. وظيفة جلب البيانات (يجب أن تكون داخل window.onload لضمان وجود العناصر)
+        window.onload = function() {
+            db.ref('authority_data').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // تحديث الشروط
+                    if (data.rules) {
+                        document.getElementById('rulesDisplay').innerText = data.rules;
+                    }
                     
-                    // تحديث قائمة الاختيار في الفورم
-                    document.getElementById('courseSelect').innerHTML = `
-                        <option value="">-- اختر الدورة --</option>
-                        <option value="${c.courseName}">${c.courseName}</option>`;
+                    // تحديث الجدول
+                    if (data.courses) {
+                        const c = data.courses;
+                        document.getElementById('schedBody').innerHTML = `
+                            <tr>
+                                <td>${c.courseName || '---'}</td>
+                                <td>${c.period1 || '---'}</td>
+                                <td>${c.period2 || '---'}</td>
+                            </tr>`;
+                    }
+                } else {
+                    document.getElementById('rulesDisplay').innerText = "لا توجد شروط منشورة حالياً.";
                 }
-            }
-        });
-
-        // إرسال الطلبات (يتم تخزينها في السحاب أيضاً)
-        document.getElementById('applyForm').onsubmit = function(e) {
-            e.preventDefault();
-            const applicantName = document.getElementById('name').value;
-            const applicantCode = document.getElementById('code').value;
-            const selectedCourse = document.getElementById('courseSelect').value;
-
-            db.ref('incoming_applications').push({
-                name: applicantName,
-                code: applicantCode,
-                course: selectedCourse,
-                time: new Date().toLocaleString()
-            }).then(() => {
-                alert('✅ تم إرسال طلبك العسكري بنجاح');
-                document.getElementById('applyForm').reset();
+            }, (error) => {
+                console.error("خطأ في الجلب:", error);
+                document.getElementById('rulesDisplay').innerText = "فشل الاتصال بالسحاب!";
             });
         };
     </script>
