@@ -7,10 +7,9 @@
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        input, textarea { background: #000; color: #fff; border: 1px solid var(--army); padding: 10px; width: 100%; margin-bottom: 10px; }
-        .btn { background: var(--gold); color: #000; padding: 10px; border: none; cursor: pointer; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
+        h2 { color: var(--gold); border-bottom: 1px solid var(--army); padding-bottom: 10px; }
+        input, textarea { background: #000; color: #fff; border: 1px solid var(--army); padding: 10px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: var(--gold); color: #000; padding: 12px; border: none; cursor: pointer; font-weight: bold; width: 100%; border-radius: 4px; }
         .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
         .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
     </style>
@@ -19,13 +18,13 @@
     <h1 style="text-align: center; color: var(--gold);">لوحة الإدارة العليا</h1>
 
     <div class="panel">
-        <h2>تعديل الشروط والضوابط</h2>
-        <textarea id="rulesText" rows="5"></textarea>
+        <h2>تعديل الشروط</h2>
+        <textarea id="rulesText" rows="5" placeholder="أدخل الشروط والضوابط هنا..."></textarea>
         <button class="btn" onclick="saveRules()">حفظ الشروط</button>
     </div>
 
     <div class="panel">
-        <h2>إضافة دورة ومواعيد</h2>
+        <h2>إضافة دورة ومواعيدها</h2>
         <input type="text" id="cName" placeholder="اسم الدورة">
         <input type="text" id="cP1" placeholder="الفترة الأولى">
         <input type="text" id="cP2" placeholder="الفترة الثانية">
@@ -33,9 +32,23 @@
     </div>
 
     <div class="panel">
+        <h2>إضافة رابط اختبار</h2>
+        <input type="text" id="eCourse" placeholder="اسم الدورة">
+        <input type="text" id="eUrl" placeholder="رابط الاختبار">
+        <button class="btn" onclick="addExam()">إضافة اختبار</button>
+    </div>
+
+    <div class="panel">
+        <h2>إضافة رابط تصحيح</h2>
+        <input type="text" id="coCourse" placeholder="اسم الدورة">
+        <input type="text" id="coUrl" placeholder="رابط التصحيح">
+        <button class="btn" onclick="addCorrection()">إضافة رابط تصحيح</button>
+    </div>
+
+    <div class="panel">
         <h2>إضافة نص استبيان</h2>
         <input type="text" id="sCourse" placeholder="اسم الدورة">
-        <textarea id="sText" placeholder="نص الاستبيان هنا..."></textarea>
+        <textarea id="sText" placeholder="نص الاستبيان..."></textarea>
         <button class="btn" onclick="addSurvey()">إضافة الاستبيان</button>
     </div>
 
@@ -47,7 +60,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        let pass = prompt("رمز الرئيس:");
+        let pass = prompt("الرمز السري:");
         if (pass === "رئيس_2026") { document.body.style.display = "block"; } 
         else { window.location.href = "index.html"; }
 
@@ -56,9 +69,12 @@
         const db = firebase.database();
 
         function saveRules() { db.ref('authority_data').update({ rules: document.getElementById('rulesText').value }); alert("تم الحفظ"); }
-        function addCourse() { db.ref('authority_data/courses').push({ name: document.getElementById('cName').value, p1: document.getElementById('cP1').value, p2: document.getElementById('cP2').value }); alert("تمت الإضافة"); }
-        function addSurvey() { db.ref('authority_data/surveys').push({ course: document.getElementById('sCourse').value, url: document.getElementById('sText').value }); alert("تمت الإضافة"); }
+        function addCourse() { db.ref('authority_data/courses').push({ name: document.getElementById('cName').value, p1: document.getElementById('cP1').value, p2: document.getElementById('cP2').value }); alert("تمت إضافة الدورة"); }
+        function addExam() { db.ref('authority_data/exams').push({ course: document.getElementById('eCourse').value, url: document.getElementById('eUrl').value }); alert("تمت إضافة الاختبار"); }
+        function addCorrection() { db.ref('authority_data/correction').push({ course: document.getElementById('coCourse').value, url: document.getElementById('coUrl').value }); alert("تمت إضافة رابط التصحيح"); }
+        function addSurvey() { db.ref('authority_data/surveys').push({ course: document.getElementById('sCourse').value, url: document.getElementById('sText').value }); alert("تمت إضافة الاستبيان"); }
 
+        // جلب الشروط الحالية عند الفتح
         db.ref('authority_data/rules').once('value', s => { document.getElementById('rulesText').value = s.val() || ""; });
     </script>
 </body>
