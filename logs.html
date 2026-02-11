@@ -2,50 +2,51 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة رئيس الهيئة | التحكم السحابي الشامل</title>
+    <title>لوحة رئيس الهيئة | إدارة كاملة</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         .boss-panel { border: 2px solid var(--gold); padding: 15px; background: #14160f; margin-bottom: 20px; border-radius: 8px; }
         h3 { color: var(--gold); border-bottom: 1px solid var(--army); padding-bottom: 10px; margin-top: 0; }
-        input, textarea, select { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 10px; margin: 5px 0; border-radius: 4px; box-sizing: border-box; }
-        .btn { background: var(--gold); color: #000; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+        input, textarea, select { width: 100%; background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; margin: 8px 0; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: var(--gold); color: #000; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-right: 4px solid var(--gold); }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 0.8rem; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
         th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
         th { color: var(--gold); background: #1a1d12; }
+        .section-header { text-align: center; color: var(--gold); border-bottom: 2px double var(--gold); padding-bottom: 15px; margin-bottom: 30px; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align: center; color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px;">نظام إدارة الهيئة العسكرية</h1>
+    <h1 class="section-header">نظام إدارة الهيئة العسكرية | دولة مارفل</h1>
 
     <div class="boss-panel">
-        <h3>| تعديل الشروط العامة</h3>
-        <textarea id="e_cond" rows="3"></textarea>
+        <h3>| إدارة الشروط العامة</h3>
+        <textarea id="e_cond" rows="3" placeholder="اكتب الشروط هنا..."></textarea>
         <button class="btn" onclick="saveRules()">تحديث ونشر الشروط</button>
     </div>
 
     <div class="boss-panel">
-        <h3>| إدارة مواعيد الدورات (تعدد وحذف)</h3>
-        <input type="text" id="c_name" placeholder="اسم الدورة (مثال: دورة الصاعقة)">
-        <input type="text" id="c_p1" placeholder="موعد الفترة الأولى">
-        <input type="text" id="c_p2" placeholder="موعد الفترة الثانية">
+        <h3>| إدارة مواعيد الدورات</h3>
+        <input type="text" id="c_name" placeholder="اسم الدورة">
+        <input type="text" id="c_p1" placeholder="الفترة الأولى">
+        <input type="text" id="c_p2" placeholder="الفترة الثانية">
         <button class="btn" style="background:#2ecc71" onclick="addCourse()">إضافة الدورة للقائمة +</button>
         <div id="list_courses" style="margin-top:10px;"></div>
     </div>
 
     <div class="boss-panel">
-        <h3>| إدارة استبيانات وروابط الاختبارات</h3>
-        <input type="text" id="s_title" placeholder="اسم الرابط (مثال: استبيان الرضا)">
-        <input type="text" id="s_url" placeholder="ضع الرابط هنا">
-        <button class="btn" style="background:#3498db; color:#fff" onclick="addSurvey()">إضافة رابط +</button>
+        <h3>| إدارة استبيانات الدورات</h3>
+        <input type="text" id="s_course_name" placeholder="اسم الدورة (مثال: دورة الصاعقة)">
+        <input type="text" id="s_link" placeholder="رابط استبيان الدورة (Google Form مثلاً)">
+        <button class="btn" style="background:#3498db; color:#fff" onclick="addSurvey()">حفظ الاستبيان +</button>
         <div id="list_surveys" style="margin-top:10px;"></div>
     </div>
 
     <div class="boss-panel">
-        <h3>| سجل المتقدمين (القبول، الاجتياز، والحذف)</h3>
+        <h3>| التحكم في سجل المتقدمين والنتائج</h3>
         <table>
             <thead>
                 <tr>
@@ -64,12 +65,12 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // نظام الحماية الشديد
-        let pass = prompt("الرمز السري للرئيس:");
+        // نظام الحماية
+        let pass = prompt("الرمز السري لرئيس الهيئة:");
         if (pass === "رئيس_2026") {
             document.body.style.display = "block";
         } else {
-            alert("غير مصرح لك!");
+            alert("دخول غير مصرح!");
             window.location.href = "index.html";
         }
 
@@ -83,7 +84,7 @@
         // حفظ الشروط
         function saveRules() {
             db.ref('authority_data/rules').set(document.getElementById('e_cond').value);
-            alert("تم التحديث");
+            alert("تم تحديث الشروط بنجاح");
         }
 
         // إضافة دورة
@@ -99,32 +100,35 @@
             }
         }
 
-        // إضافة استبيان
+        // إضافة استبيان (معدل)
         function addSurvey() {
-            const title = document.getElementById('s_title').value;
-            const url = document.getElementById('s_url').value;
-            if(title && url) {
-                db.ref('authority_data/surveys').push({ title, url });
-                document.getElementById('s_title').value = '';
-                document.getElementById('s_url').value = '';
+            const courseName = document.getElementById('s_course_name').value;
+            const link = document.getElementById('s_link').value;
+            if(courseName && link) {
+                db.ref('authority_data/surveys').push({ courseName, link });
+                document.getElementById('s_course_name').value = '';
+                document.getElementById('s_link').value = '';
+                alert("تمت إضافة الاستبيان بنجاح");
+            } else {
+                alert("يرجى ملء اسم الدورة والرابط");
             }
         }
 
-        // الحذف العام
+        // حذف عام
         function deleteItem(path, id) {
-            if(confirm("هل تريد الحذف؟")) {
+            if(confirm("هل تريد الحذف نهائياً؟")) {
                 db.ref('authority_data/' + path + '/' + id).remove();
             }
         }
 
         // حذف متقدم
         function deleteApp(id) {
-            if(confirm("حذف المتقدم نهائياً؟")) {
+            if(confirm("سيتم مسح بيانات المتقدم بالكامل، هل أنت متأكد؟")) {
                 db.ref('applications/' + id).remove();
             }
         }
 
-        // تحديث حالة المتقدم
+        // تحديث المتقدمين
         function updateApp(id, field, val) {
             db.ref('applications/' + id).update({ [field]: val });
         }
@@ -135,24 +139,26 @@
             const auth = data.authority_data || {};
             const apps = data.applications || {};
 
-            // شروط
             document.getElementById('e_cond').value = auth.rules || "";
 
-            // دورات
+            // عرض الدورات
             let cHtml = "";
             for(let id in auth.courses) {
                 cHtml += `<div class="item-row"><span>${auth.courses[id].name}</span><button class="btn-del" onclick="deleteItem('courses','${id}')">حذف</button></div>`;
             }
             document.getElementById('list_courses').innerHTML = cHtml;
 
-            // استبيانات
+            // عرض الاستبيانات (معدل)
             let sHtml = "";
             for(let id in auth.surveys) {
-                sHtml += `<div class="item-row"><span>${auth.surveys[id].title}</span><button class="btn-del" onclick="deleteItem('surveys','${id}')">حذف</button></div>`;
+                sHtml += `<div class="item-row">
+                    <span><b>الدورة:</b> ${auth.surveys[id].courseName}</span>
+                    <button class="btn-del" onclick="deleteItem('surveys','${id}')">حذف</button>
+                </div>`;
             }
             document.getElementById('list_surveys').innerHTML = sHtml;
 
-            // متقدمين
+            // عرض سجل المتقدمين
             let aHtml = "";
             for(let id in apps) {
                 const a = apps[id];
