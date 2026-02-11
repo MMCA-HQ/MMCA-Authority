@@ -5,59 +5,59 @@
     <title>بوابة المتقدمين | دولة مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; text-align: center; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 20px; text-align: right; border-radius: 5px; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; text-align: right; border-radius: 5px; }
         h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
         input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 8px 0; border-radius: 4px; box-sizing: border-box; }
-        .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; }
+        .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; font-size: 1rem; }
+        .btn-submit:hover { background: #e0b869; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #000; }
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
-        /* ألوان الحالات */
-        .status-accepted { color: #2ecc71; font-weight: bold; } /* أخضر للقبول */
-        .status-pending { color: #f1c40f; } /* أصفر للانتظار */
-        .status-passed { color: #3498db; font-weight: bold; } /* أزرق للاجتياز */
+        .status-accepted { color: #2ecc71; font-weight: bold; }
+        .status-pending { color: #f1c40f; }
+        .status-passed { color: #3498db; font-weight: bold; }
+        .rules-box { white-space: pre-wrap; line-height: 1.6; color: #ddd; }
     </style>
 </head>
 <body>
 
-    <h1>هيئة تنظيم الدورات العسكرية - دولة مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold);">هيئة تنظيم الدورات العسكرية - دولة مارفل</h1>
 
     <div class="panel">
-        <h2>أولاً: نتائج القبول المبدئي</h2>
-        <p style="font-size: 0.8rem; color: #aaa;">هذا الجدول مخصص لمعرفة حالة طلبك (مقبول أو تحت المراجعة)</p>
+        <h2>| شروط الالتحاق بالدورة</h2>
+        <div id="rulesDisplay" class="rules-box">جاري تحميل الشروط...</div>
+    </div>
+
+    <div class="panel">
+        <h2>| مواعيد الدورات</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>الاسم</th>
-                    <th>الكود</th>
-                    <th>الدورة</th>
-                    <th>الحالة</th>
-                </tr>
-            </thead>
-            <tbody id="acceptanceBody">
-                <tr><td colspan="4">جاري التحميل...</td></tr>
-            </tbody>
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody id="coursesTable"><tr><td colspan="3">جاري تحميل المواعيد...</td></tr></tbody>
         </table>
     </div>
 
-    <hr style="border: 0.5px solid var(--army); margin: 40px 0;">
+    <div class="panel" style="border-color: var(--gold);">
+        <h2 style="color: var(--gold);">| استمارة طلب الالتحاق</h2>
+        <input type="text" id="regName" placeholder="الاسم الكامل">
+        <input type="text" id="regCode" placeholder="الكود العسكري">
+        <select id="regCourse"><option value="">-- اختر الدورة --</option></select>
+        <button class="btn-submit" onclick="submitApplication()">إرسال الطلب الرسمي</button>
+    </div>
+
+    <div class="panel">
+        <h2>أولاً: نتائج القبول المبدئي</h2>
+        <table>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
+            <tbody id="acceptanceBody"><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
+        </table>
+    </div>
 
     <div class="panel" style="border-color: var(--gold);">
-        <h2 style="color: var(--gold);">ثانياً: لوحة الشرف (نتائج اجتياز الدورات)</h2>
-        <p style="font-size: 0.8rem; color: #aaa;">يظهر هنا فقط الأبطال الذين اجتازوا الدورة بنجاح</p>
+        <h2 style="color: var(--gold);">ثانياً: لوحة الشرف (نتائج الاجتياز)</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>المتدرب</th>
-                    <th>الكود</th>
-                    <th>الدورة</th>
-                    <th>النتيجة النهائية</th>
-                </tr>
-            </thead>
-            <tbody id="passingBody">
-                <tr><td colspan="4">بانتظار اعتماد النتائج النهائية...</td></tr>
-            </tbody>
+            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
+            <tbody id="passingBody"><tr><td colspan="4">بانتظار اعتماد النتائج...</td></tr></tbody>
         </table>
     </div>
 
@@ -72,42 +72,61 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
 
-        // جلب وتوزيع البيانات
-        db.ref('applications').on('value', (snapshot) => {
-            const apps = snapshot.val();
-            const accBody = document.getElementById('acceptanceBody');
-            const passBody = document.getElementById('passingBody');
-            
+        // إرسال طلب جديد
+        function submitApplication() {
+            const name = document.getElementById('regName').value;
+            const code = document.getElementById('regCode').value;
+            const course = document.getElementById('regCourse').value;
+
+            if(!name || !code || !course) return alert("يرجى إكمال كافة البيانات");
+
+            db.ref('applications').push({
+                name: name,
+                code: code,
+                course: course,
+                status: 'تحت المراجعة',
+                pass: 'بانتظار الدورة'
+            });
+            alert("تم إرسال طلبك بنجاح، تابع حالتك في الجدول أدناه.");
+            document.getElementById('regName').value = "";
+            document.getElementById('regCode').value = "";
+        }
+
+        // جلب وتحديث البيانات تلقائياً
+        db.ref().on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            const auth = data.authority_data || {};
+            const apps = data.applications || {};
+
+            // تحديث الشروط
+            document.getElementById('rulesDisplay').innerText = auth.rules || "لا توجد شروط معلنة حالياً.";
+
+            // تحديث جدول المواعيد وقائمة الاختيار في الاستمارة
+            let courseHtml = "";
+            let selectHtml = '<option value="">-- اختر الدورة --</option>';
+            for(let id in auth.courses) {
+                const c = auth.courses[id];
+                courseHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
+                selectHtml += `<option value="${c.name}">${c.name}</option>`;
+            }
+            document.getElementById('coursesTable').innerHTML = courseHtml || '<tr><td colspan="3">لا توجد دورات مجدولة</td></tr>';
+            document.getElementById('regCourse').innerHTML = selectHtml;
+
+            // تحديث جداول النتائج
             let accHtml = "";
             let passHtml = "";
-            
-            if (apps) {
-                for (let id in apps) {
-                    const a = apps[id];
-
-                    // 1. منطق جدول القبول (يظهر فيه الجميع)
-                    let statusStyle = a.status === 'مقبول' ? 'status-accepted' : 'status-pending';
-                    accHtml += `<tr>
-                        <td>${a.name}</td>
-                        <td>${a.code}</td>
-                        <td>${a.course}</td>
-                        <td class="${statusStyle}">${a.status}</td>
-                    </tr>`;
-
-                    // 2. منطق جدول الاجتياز (لا يظهر فيه إلا الناجحون فعلياً)
-                    if (a.pass === 'ناجح' || a.pass === 'تم الاجتياز') {
-                        passHtml += `<tr>
-                            <td>${a.name}</td>
-                            <td>${a.code}</td>
-                            <td>${a.course}</td>
-                            <td class="status-passed">${a.pass}</td>
-                        </tr>`;
-                    }
-                }
+            for (let id in apps) {
+                const a = apps[id];
+                let statusStyle = a.status === 'مقبول' ? 'status-accepted' : (a.status === 'مرفوض' ? 'status-reject' : 'status-pending');
                 
-                accBody.innerHTML = accHtml || '<tr><td colspan="4">لا يوجد طلبات حالياً</td></tr>';
-                passBody.innerHTML = passHtml || '<tr><td colspan="4">لا توجد نتائج اجتياز معتمدة بعد</td></tr>';
+                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${statusStyle}">${a.status}</td></tr>`;
+
+                if (a.pass === 'ناجح' || a.pass === 'تم الاجتياز') {
+                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="status-passed">${a.pass}</td></tr>`;
+                }
             }
+            document.getElementById('acceptanceBody').innerHTML = accHtml || '<tr><td colspan="4">لا يوجد طلبات حالياً</td></tr>';
+            document.getElementById('passingBody').innerHTML = passHtml || '<tr><td colspan="4">لا توجد نتائج معتمدة بعد</td></tr>';
         });
     </script>
 </body>
