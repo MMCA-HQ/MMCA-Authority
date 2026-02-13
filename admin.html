@@ -16,8 +16,8 @@
         table { width: 100%; border-collapse: collapse; background: #080905; }
         th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 2px; }
-        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 2px; }
+        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 2px; }
+        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 2px; }
     </style>
 </head>
 <body>
@@ -25,7 +25,7 @@
 <div id="loginOverlay">
     <div class="login-box">
         <h2 style="color:var(--gold)">بوابة المشرفين</h2>
-        <input type="text" id="militaryCode" placeholder="الكود العسكري">
+        <input type="text" id="militaryCode" placeholder="الكود العسكري" value="">
         <input type="password" id="admPass" placeholder="كلمة المرور">
         <button class="btn-login" onclick="checkAuth()">دخول النظام</button>
     </div>
@@ -70,8 +70,8 @@
             document.getElementById('mainContent').style.display = 'block';
             pushLog(`تم تسجيل الدخول باسم الكود العسكري ( ${currentCode} )`);
         } else {
-            pushLog(`⚠️ محاولة دخول فاشلة للمشرفين! الكود المستخدم: ( ${inputCode} ) - كلمة مرور خاطئة`);
-            alert("خطأ");
+            pushLog(`⚠️ محاولة دخول فاشلة للمشرفين! الكود المستخدم: ( ${inputCode} )`);
+            alert("خطأ في بيانات الدخول");
         }
     }
 
@@ -88,13 +88,15 @@
         const auth = root.authority_data || {};
         
         let hA = "";
-        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td>${apps[id].course}</td><td><button class="btn-acc" onclick="updateStat('${id}','${apps[id].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateStat('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td><td><button class="btn-acc" style="background:#3498db" onclick="updateStat('${id}','${apps[id].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#e67e22" onclick="updateStat('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
+        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td>${apps[id].course}</td>
+        <td><button class="btn-acc" onclick="updateStat('${id}','${apps[id].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateStat('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td>
+        <td><button class="btn-acc" style="background:#3498db" onclick="updateStat('${id}','${apps[id].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#e67e22" onclick="updateStat('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
         document.getElementById('tbody_apps').innerHTML = hA;
 
         let hI = "";
         for(let i in auth.courses) {
             let assets = "";
-            for(let a in auth.assets) { if(auth.assets[a].name === auth.courses[i].name) assets += `[${auth.assets[a].type}: ${auth.assets[a].content.substring(0,10)}...] `; }
+            for(let a in auth.assets) { if(auth.assets[a].name === auth.courses[i].name) assets += `[${auth.assets[a].type}: ${auth.assets[a].content.substring(0,15)}...] `; }
             hI += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td><td style="font-size:0.7rem; color:#aaa">${assets || 'لا يوجد'}</td></tr>`;
         }
         document.getElementById('tbody_info').innerHTML = hI;
