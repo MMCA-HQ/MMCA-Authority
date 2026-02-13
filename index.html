@@ -9,7 +9,7 @@
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 5px; }
         h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; font-size: 1.2rem; }
         label { display: block; margin-top: 10px; color: var(--gold); font-size: 0.9rem; }
-        input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 5px 0 15px 0; border-radius: 4px; box-sizing: border-box; font-family: Tahoma; }
+        input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 5px 0 15px 0; border-radius: 4px; box-sizing: border-box; }
         .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; font-size: 1.1rem; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
@@ -18,7 +18,6 @@
         .status-pending { color: #f1c40f; }
         .status-rejected { color: #e74c3c; }
         .pass-success { color: #2ecc71; font-weight: bold; border: 1px solid #2ecc71; padding: 2px 8px; border-radius: 3px; }
-        .pass-failed { color: #e74c3c; font-weight: bold; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 3px; }
         .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
         .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
     </style>
@@ -44,28 +43,26 @@
         <label>الاسم كامل:</label>
         <input type="text" id="regName" placeholder="الاسم كامل">
         <label>الكود العسكري:</label>
-        <input type="text" id="regCode" placeholder="أدخل الكود الخاص بك">
-        <label>العمر:</label>
-        <input type="number" id="regAge" placeholder="أدخل عمرك">
+        <input type="text" id="regCode" placeholder="أدخل الكود">
         <label>الدورة المطلوبة:</label>
         <select id="regCourse" onchange="updatePeriods()"><option value="">-- اختر الدورة --</option></select>
         <label>اختر الفترة:</label>
-        <select id="regPeriod"><option value="">-- يرجى اختيار الدورة أولاً --</option></select>
+        <select id="regPeriod"><option value="">-- اختر الدورة أولاً --</option></select>
         <button class="btn-submit" onclick="submitApplication()">إرسال الطلب الرسمي</button>
     </div>
 
     <div class="panel">
         <h2>أولاً: نتائج القبول المبدئي</h2>
         <table>
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الفترة</th><th>الحالة</th></tr></thead>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
             <tbody id="accBody"></tbody>
         </table>
     </div>
 
-    <div class="panel" style="border-color: var(--gold);">
-        <h2>ثانياً: لوحة الشرف (نتائج اجتياز الدورات)</h2>
+    <div class="panel">
+        <h2>ثانياً: لوحة الشرف</h2>
         <table>
-            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
+            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
             <tbody id="passBody"></tbody>
         </table>
     </div>
@@ -83,27 +80,27 @@
             const courseName = document.getElementById('regCourse').value;
             db.ref('authority_data/courses').once('value', snap => {
                 const courses = snap.val();
-                let options = '<option value="">-- اختر الفترة --</option>';
+                let opts = '<option value="">-- اختر الفترة --</option>';
                 for(let id in courses) {
                     if(courses[id].name === courseName) {
-                        if(courses[id].p1) options += `<option value="${courses[id].p1}">${courses[id].p1}</option>`;
-                        if(courses[id].p2) options += `<option value="${courses[id].p2}">${courses[id].p2}</option>`;
+                        if(courses[id].p1) opts += `<option value="${courses[id].p1}">${courses[id].p1}</option>`;
+                        if(courses[id].p2) opts += `<option value="${courses[id].p2}">${courses[id].p2}</option>`;
                     }
                 }
-                document.getElementById('regPeriod').innerHTML = options;
+                document.getElementById('regPeriod').innerHTML = opts;
             });
         }
 
         function submitApplication() {
-            const fields = { name: document.getElementById('regName').value, code: document.getElementById('regCode').value, age: document.getElementById('regAge').value, course: document.getElementById('regCourse').value, period: document.getElementById('regPeriod').value };
-            if(!fields.name || !fields.code || !fields.course || !fields.period) return alert("أكمل البيانات");
-            db.ref('applications').push({...fields, status: 'تحت المراجعة', pass: 'بانتظار الدورة'}).then(() => { alert("تم الإرسال"); });
+            const fields = { name: document.getElementById('regName').value, code: document.getElementById('regCode').value, course: document.getElementById('regCourse').value, period: document.getElementById('regPeriod').value };
+            if(!fields.name || !fields.code || !fields.course) return alert("أكمل البيانات");
+            db.ref('applications').push({...fields, status: 'تحت المراجعة', pass: 'بانتظار الدورة'}).then(() => alert("تم الإرسال"));
         }
 
-        db.ref().on('value', (snap) => {
+        db.ref().on('value', snap => {
             const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
             document.getElementById('rulesDisplay').innerText = auth.rules || "لا توجد شروط";
-            let cHtml = ""; let selHtml = '<option value="">-- اختر الدورة --</option>';
+            let cHtml = "", selHtml = '<option value="">-- اختر الدورة --</option>';
             for(let id in auth.courses) {
                 const c = auth.courses[id];
                 cHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
@@ -111,15 +108,14 @@
             }
             document.getElementById('coursesTable').innerHTML = cHtml;
             document.getElementById('regCourse').innerHTML = selHtml;
-            let accHtml = ""; let passHtml = "";
+            
+            let accHtml = "", passHtml = "";
             for(let id in apps) {
                 const a = apps[id];
-                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${a.period || '-'}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
+                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
                 if(a.status === 'مقبول') {
-                    let pClass = "pass-waiting"; let pText = a.pass || "قيد الانتظار";
-                    if(a.pass === 'ناجح' || a.pass === 'تم الاجتياز') { pClass = "pass-success"; pText = "اجتياز ✓"; }
-                    if(a.pass === 'راسب' || a.pass === 'عدم اجتياز') { pClass = "pass-failed"; pText = "عدم اجتياز ✗"; }
-                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><span class="${pClass}">${pText}</span></td></tr>`;
+                    let pClass = a.pass === 'ناجح' ? "pass-success" : "";
+                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${pClass}">${a.pass}</td></tr>`;
                 }
             }
             document.getElementById('accBody').innerHTML = accHtml;
