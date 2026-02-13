@@ -4,210 +4,128 @@
     <meta charset="UTF-8">
     <title>القيادة العليا | دولة مارفل</title>
     <style>
-        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; --gray: #1a1d12; }
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; margin: 0; }
-        
-        /* شاشة الدخول التمويهية */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #14160f; border: 1px solid var(--army); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
-        .btn-login { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
-
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.4rem; }
-        
-        /* تنسيق الحقول */
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
         .admin-controls { display: flex; gap: 10px; margin-bottom: 20px; flex-direction: row-reverse; }
         input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 4px; flex: 1; text-align: center; }
-        .btn-main { background: var(--gold); color: #000; border: none; padding: 0 20px; cursor: pointer; font-weight: bold; border-radius: 4px; min-width: 120px; }
-        
-        /* الجداول */
-        table { width: 100%; border-collapse: collapse; background: #080905; margin-top: 10px; }
-        th, td { border: 1px solid #1a1d12; padding: 12px; text-align: center; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: collapse; background: #080905; }
+        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        
         .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
-        .btn-edit { background: #3498db; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-left: 5px; }
-
-        /* سجل اللوقات */
-        #logBox { max-height: 250px; overflow-y: auto; background: #000; padding: 15px; border: 1px solid #222; border-radius: 4px; font-family: monospace; }
+        #logBox { max-height: 300px; overflow-y: auto; background: #000; padding: 15px; border: 1px solid #222; border-radius: 4px; font-family: monospace; }
         .log-entry { font-size: 0.85rem; padding: 5px 0; border-bottom: 1px solid #111; color: #00ff00; text-align: right; }
-        
-        .footer { margin-top: 50px; padding: 25px; border-top: 1px solid var(--army); text-align: center; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="loginOverlay">
-        <div class="login-box">
-            <h2>دخول القيادة العليا</h2>
-            <input type="text" placeholder="اسم المستخدم (تمويه)">
-            <input type="password" id="realPass" placeholder="كلمة المرور">
-            <button class="btn-login" onclick="checkAuth()">دخول النظام</button>
+<div id="loginOverlay">
+    <div class="login-box">
+        <h2 style="color:var(--gold)">دخول القيادة العليا</h2>
+        <input type="text" id="fakeCode" placeholder="الكود العسكري">
+        <input type="password" id="realPass" placeholder="كلمة المرور">
+        <button class="btn-main" style="width:100%" onclick="checkAuth()">دخول</button>
+    </div>
+</div>
+
+<div id="mainContent">
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة التحكم المركزية - مارفل</h1>
+
+    <div class="panel">
+        <h2>| الشروط والضوابط</h2>
+        <textarea id="rulesText" style="width: 100%; height: 60px;"></textarea>
+        <button class="btn-main" style="width: 100%; margin-top:10px" onclick="saveRules()">تحديث</button>
+    </div>
+
+    <div class="panel">
+        <h2>| المواعيد، الروابط، والاستبيانات</h2>
+        <div class="admin-controls">
+            <button class="btn-main" onclick="saveData('courses')">إضافة دورة</button>
+            <input type="text" id="c_p2" placeholder="الفترة 2">
+            <input type="text" id="c_p1" placeholder="الفترة 1">
+            <input type="text" id="c_name" placeholder="اسم الدورة">
+        </div>
+        <div class="admin-controls">
+            <button class="btn-main" onclick="saveAsset()">إضافة (رابط/استبيان)</button>
+            <textarea id="asset_text" placeholder="الرابط أو نص الاستبيان"></textarea>
+            <select id="asset_type" style="background:#000; color:#fff; padding:10px;"><option value="رابط">رابط</option><option value="استبيان">استبيان</option></select>
+            <input type="text" id="asset_name" placeholder="اسم الدورة">
         </div>
     </div>
 
-    <div id="mainContent">
-        <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة التحكم المركزية - مارفل</h1>
-
-        <div class="panel">
-            <h2>| الشروط والضوابط العامة</h2>
-            <textarea id="rulesText" style="width: 100%; height: 80px; margin-bottom: 10px;"></textarea>
-            <button class="btn-main" style="width: 100%; height: 40px;" onclick="saveRules()">تحديث الشروط</button>
-        </div>
-
-        <div class="panel">
-            <h2>| إدارة الدورات والمواعيد</h2>
-            <div class="admin-controls">
-                <button class="btn-main" onclick="saveData('courses')">إضافة / تحديث</button>
-                <input type="text" id="c_p2" placeholder="الفترة 2">
-                <input type="text" id="c_p1" placeholder="الفترة 1">
-                <input type="text" id="c_name" placeholder="اسم الدورة">
-                <input type="hidden" id="c_id">
-            </div>
-            <table>
-                <thead><tr><th>اسم الدورة</th><th>الفترة 1</th><th>الفترة 2</th><th>التحكم</th></tr></thead>
-                <tbody id="tbody_courses"></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>| إدارة روابط الاختبارات والتصحيح</h2>
-            <div class="admin-controls">
-                <button class="btn-main" onclick="saveData('links')">إضافة / تحديث</button>
-                <input type="text" id="l_url" placeholder="الرابط URL">
-                <select id="l_type" style="background:#000; color:#fff; border:1px solid #333; padding:10px;">
-                    <option value="exam">رابط اختبار</option>
-                    <option value="corr">رابط تصحيح</option>
-                </select>
-                <input type="text" id="l_name" placeholder="اسم الدورة">
-                <input type="hidden" id="l_id">
-            </div>
-            <table>
-                <thead><tr><th>الدورة</th><th>النوع</th><th>الرابط</th><th>التحكم</th></tr></thead>
-                <tbody id="tbody_links"></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>| استبيانات الدورات (نصوص)</h2>
-            <div class="admin-controls">
-                <button class="btn-main" onclick="saveData('surveys')">إضافة / تحديث</button>
-                <textarea id="s_text" placeholder="نص الاستبيان"></textarea>
-                <input type="text" id="s_name" placeholder="اسم الدورة">
-                <input type="hidden" id="s_id">
-            </div>
-            <table>
-                <thead><tr><th>الدورة</th><th>النص</th><th>التحكم</th></tr></thead>
-                <tbody id="tbody_surveys"></tbody>
-            </table>
-        </div>
-
-        <div class="panel" style="border-color: #e74c3c;">
-            <h2 style="color: #e74c3c; border-right-color: #e74c3c;">| شؤون المتقدمين (ID + الرولات)</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th>
-                        <th>حذف القبول</th><th>حذف النتيجة</th><th>حذف نهائي</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_manage_apps"></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>| سجل مراقبة النظام المركزي (Logs)</h2>
-            <div id="logBox"></div>
-        </div>
-
-        <div class="footer">حقوق - دولة مارفل © 2026</div>
+    <div class="panel">
+        <h2>| المتقدمين (ID + الرولات)</h2>
+        <table>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th><th>تصفير القبول</th><th>تصفير النتيجة</th><th>حذف</th></tr></thead>
+            <tbody id="tbody_manage_apps"></tbody>
+        </table>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div class="panel">
+        <h2>| سجل النظام المتصل (Logs)</h2>
+        <div id="logBox"></div>
+    </div>
+</div>
 
-        function checkAuth() {
-            if (document.getElementById('realPass').value === "رئيس_2026") {
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-                pushLog("الرئيس: قام بتسجيل الدخول إلى النظام");
-            } else { alert("كلمة المرور غير صحيحة"); }
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function pushLog(msg) { db.ref('system_logs').push({ msg: msg, time: new Date().toLocaleString('ar-SA') }); }
+
+    function checkAuth() {
+        const pass = document.getElementById('realPass').value;
+        const code = document.getElementById('fakeCode').value || "غير محدد";
+        if (pass === "رئيس_2026") {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            pushLog(`تم تسجيل الدخول باسم ( الرئيس )`);
+        } else {
+            pushLog(`⚠️ محاولة اختراق للرئيس! الكود المستخدم: ( ${code} ) - كلمة مرور خاطئة`);
+            alert("خطأ في البيانات");
         }
+    }
 
-        function pushLog(msg) {
-            db.ref('system_logs').push({ msg: msg, time: new Date().toLocaleString('ar-SA') });
-        }
+    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value); pushLog("الرئيس: عدل الشروط العامة"); }
+    function saveData(path) {
+        let obj = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
+        db.ref('authority_data/'+path).push(obj);
+        pushLog(`الرئيس: أضاف دورة (${obj.name})`);
+    }
+    function saveAsset() {
+        let obj = { name: document.getElementById('asset_name').value, type: document.getElementById('asset_type').value, content: document.getElementById('asset_text').value };
+        db.ref('authority_data/assets').push(obj);
+        pushLog(`الرئيس: أضاف ${obj.type} لدورة ${obj.name}`);
+    }
+    function resetStat(id, n, type) {
+        let field = (type === 'stat') ? {status:'تحت المراجعة'} : {pass:'بانتظار الدورة'};
+        db.ref('applications/'+id).update(field);
+        pushLog(`الرئيس: صفر ${type === 'stat' ? 'حالة قبول' : 'نتيجة'} المتقدم: ${n}`);
+    }
+    function deleteApp(id, n) { if(confirm("حذف "+n)) { db.ref('applications/'+id).remove(); pushLog(`الرئيس: حذف المتقدم ${n} نهائياً`); } }
 
-        function saveRules() { 
-            db.ref('authority_data/rules').set(document.getElementById('rulesText').value); 
-            pushLog("الرئيس: قام بتحديث الشروط والضوابط");
-            alert("تم الحفظ");
-        }
-
-        function saveData(path) {
-            let id, obj, pre;
-            if(path === 'courses') {
-                pre = 'c'; id = document.getElementById('c_id').value;
-                obj = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
-            } else if(path === 'links') {
-                pre = 'l'; id = document.getElementById('l_id').value;
-                obj = { name: document.getElementById('l_name').value, url: document.getElementById('l_url').value, type: document.getElementById('l_type').value };
-            } else {
-                pre = 's'; id = document.getElementById('s_id').value;
-                obj = { name: document.getElementById('s_name').value, text: document.getElementById('s_text').value };
-            }
-
-            if(id) { db.ref('authority_data/'+path+'/'+id).update(obj); pushLog("تحديث في "+path+": "+obj.name); }
-            else { db.ref('authority_data/'+path).push(obj); pushLog("إضافة في "+path+": "+obj.name); }
-            
-            // مسح الحقول
-            document.querySelectorAll(`.panel input, .panel textarea`).forEach(el => el.value = "");
-        }
-
-        function resetStat(id, n) { if(confirm("تصفير قبول "+n+"؟")) { db.ref('applications/'+id).update({status:'تحت المراجعة'}); pushLog("الرئيس: صفر حالة قبول المتقدم "+n); }}
-        function resetPass(id, n) { if(confirm("تصفير نتيجة "+n+"؟")) { db.ref('applications/'+id).update({pass:'بانتظار الدورة'}); pushLog("الرئيس: صفر نتيجة المتقدم "+n); }}
-        function deleteApp(id, n) { if(confirm("حذف نهائي لـ "+n+"؟")) { db.ref('applications/'+id).remove(); pushLog("الرئيس: حذف المتقدم "+n+" نهائياً"); }}
-
-        db.ref().on('value', (snap) => {
-            const root = snap.val() || {};
-            const auth = root.authority_data || {};
-            const apps = root.applications || {};
-            const logs = root.system_logs || {};
-
-            document.getElementById('rulesText').value = auth.rules || "";
-
-            // عرض الدورات
-            let hC = "";
-            for(let i in auth.courses) hC += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td><td><button class="btn-del" onclick="db.ref('authority_data/courses/${i}').remove()">حذف</button></td></tr>`;
-            document.getElementById('tbody_courses').innerHTML = hC;
-
-            // عرض الروابط
-            let hL = "";
-            for(let i in auth.links) hL += `<tr><td>${auth.links[i].name}</td><td>${auth.links[i].type}</td><td>${auth.links[i].url.substring(0,15)}...</td><td><button class="btn-del" onclick="db.ref('authority_data/links/${i}').remove()">حذف</button></td></tr>`;
-            document.getElementById('tbody_links').innerHTML = hL;
-
-            // عرض الاستبيانات
-            let hS = "";
-            for(let i in auth.surveys) hS += `<tr><td>${auth.surveys[i].name}</td><td>${auth.surveys[i].text.substring(0,20)}...</td><td><button class="btn-del" onclick="db.ref('authority_data/surveys/${i}').remove()">حذف</button></td></tr>`;
-            document.getElementById('tbody_surveys').innerHTML = hS;
-
-            // عرض المتقدمين
-            let hA = "";
-            for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td><button class="btn-del" style="background:#f39c12" onclick="resetStat('${id}','${apps[id].name}')">حذف</button></td><td><button class="btn-del" style="background:#e67e22" onclick="resetPass('${id}','${apps[id].name}')">حذف</button></td><td><button class="btn-del" onclick="deleteApp('${id}','${apps[id].name}')">طرد</button></td></tr>`;
-            document.getElementById('tbody_manage_apps').innerHTML = hA;
-
-            // عرض اللوقات
-            let hLog = "";
-            let logArr = Object.values(logs).reverse().slice(0, 40);
-            logArr.forEach(l => hLog += `<div class="log-entry">[${l.time}] ${l.msg}</div>`);
-            document.getElementById('logBox').innerHTML = hLog;
-        });
-    </script>
+    db.ref().on('value', (snap) => {
+        const root = snap.val() || {};
+        const apps = root.applications || {};
+        const logs = root.system_logs || {};
+        document.getElementById('rulesText').value = (root.authority_data || {}).rules || "";
+        let hAp = "";
+        for(let id in apps) hAp += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td><button class="btn-del" style="background:#f39c12" onclick="resetStat('${id}','${apps[id].name}','stat')">حذف</button></td><td><button class="btn-del" style="background:#e67e22" onclick="resetStat('${id}','${apps[id].name}','pass')">حذف</button></td><td><button class="btn-del" onclick="deleteApp('${id}','${apps[id].name}')">طرد</button></td></tr>`;
+        document.getElementById('tbody_manage_apps').innerHTML = hAp;
+        let hL = "";
+        let logArr = Object.values(logs).reverse().slice(0, 50);
+        logArr.forEach(l => hL += `<div class="log-entry">[${l.time}] ${l.msg}</div>`);
+        document.getElementById('logBox').innerHTML = hL;
+    });
+</script>
 </body>
 </html>
