@@ -9,17 +9,17 @@
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #14160f; border: 1px solid var(--army); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
-        .btn-main { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-        .btn-main:hover { opacity: 0.8; }
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.2rem; }
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
         input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 4px; margin: 5px; }
         table { width: 100%; border-collapse: collapse; background: #080905; margin-top: 15px; }
         th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
+        .btn-edit { background: #2980b9; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-left: 5px; }
         .btn-del { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
-        .log-box { background: #000; height: 300px; overflow-y: auto; padding: 15px; border: 1px solid #222; font-family: monospace; color: #00ff00; border-radius: 4px; }
+        .log-box { background: #000; height: 300px; overflow-y: auto; padding: 15px; border: 1px solid #222; font-family: monospace; color: #00ff00; }
         .footer { text-align: center; padding: 20px; color: var(--gold); border-top: 1px solid var(--army); margin-top: 40px; }
     </style>
 </head>
@@ -38,54 +38,39 @@
     <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة القيادة - مارفل</h1>
 
     <div class="panel">
-        <h2>| إدارة الشروط والضوابط</h2>
-        <textarea id="rulesInput" style="width:95%; height:80px;" placeholder="أدخل نص الشروط الجديد..."></textarea>
-        <button class="btn-main" style="margin-top:10px" onclick="saveRules()">حفظ وتحديث الشروط</button>
+        <h2>| إدارة الشروط</h2>
+        <textarea id="rulesInput" style="width:95%; height:60px;"></textarea>
+        <button class="btn-main" onclick="saveData('rules', {text: document.getElementById('rulesInput').value})">حفظ الشروط</button>
     </div>
 
     <div class="panel">
-        <h2>| إدارة مواعيد الدورات</h2>
-        <div class="controls">
-            <input type="text" id="c_name" placeholder="اسم الدورة">
-            <input type="text" id="c_p1" placeholder="الفترة 1">
-            <input type="text" id="c_p2" placeholder="الفترة 2">
-            <button class="btn-main" onclick="addCourse()">إضافة/تحديث موعد</button>
-        </div>
-        <table id="coursesTable">
-            <thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>إجراء</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <h2>| إدارة المواعيد</h2>
+        <input type="text" id="c_name" placeholder="اسم الدورة">
+        <input type="text" id="c_p1" placeholder="ف1">
+        <input type="text" id="c_p2" placeholder="ف2">
+        <button class="btn-main" onclick="saveData('courses', {name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value}, 'c_name')">حفظ / تحديث الموعد</button>
+        <table id="table_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>إجراء</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
-        <h2>| إدارة روابط الاختبارات والتصحيح</h2>
-        <div class="controls">
-            <input type="text" id="l_name" placeholder="اسم الدورة">
-            <input type="text" id="l_exam" placeholder="رابط الاختبار">
-            <input type="text" id="l_corr" placeholder="رابط التصحيح">
-            <button class="btn-main" onclick="addLinks()">إضافة/تحديث الروابط</button>
-        </div>
-        <table id="linksTable">
-            <thead><tr><th>الدورة</th><th>رابط الاختبار</th><th>رابط التصحيح</th><th>إجراء</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <h2>| إدارة الروابط</h2>
+        <input type="text" id="l_name" placeholder="اسم الدورة">
+        <input type="text" id="l_exam" placeholder="رابط الاختبار">
+        <input type="text" id="l_corr" placeholder="رابط التصحيح">
+        <button class="btn-main" onclick="saveData('links', {name: document.getElementById('l_name').value, exam: document.getElementById('l_exam').value, corr: document.getElementById('l_corr').value}, 'l_name')">حفظ / تحديث الروابط</button>
+        <table id="table_links"><thead><tr><th>الدورة</th><th>الاختبار</th><th>التصحيح</th><th>إجراء</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
-        <h2>| إدارة استبيانات الدورات</h2>
-        <div class="controls">
-            <input type="text" id="s_name" placeholder="اسم الدورة">
-            <textarea id="s_text" placeholder="نص الاستبيان الواضح..." style="width: 400px; height: 40px;"></textarea>
-            <button class="btn-main" onclick="addSurvey()">إضافة/تحديث الاستبيان</button>
-        </div>
-        <table id="surveysTable">
-            <thead><tr><th>الدورة</th><th>نص الاستبيان</th><th>إجراء</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <h2>| إدارة الاستبيانات</h2>
+        <input type="text" id="s_name" placeholder="اسم الدورة">
+        <textarea id="s_text" placeholder="نص الاستبيان..." style="width:300px; height:40px;"></textarea>
+        <button class="btn-main" onclick="saveData('surveys', {name: document.getElementById('s_name').value, text: document.getElementById('s_text').value}, 's_name')">حفظ / تحديث الاستبيان</button>
+        <table id="table_surveys"><thead><tr><th>الدورة</th><th>النص</th><th>إجراء</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
-        <h2>| سجل مراقبة النظام (Logs) - بث مباشر</h2>
+        <h2>| سجل اللوقات المباشر</h2>
         <div id="logBox" class="log-box"></div>
     </div>
 
@@ -99,106 +84,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // إصلاح نظام اللوقات ليعمل فوراً
-    function pushLog(msg) {
-        const logData = { msg: msg, time: new Date().toLocaleString('ar-SA') };
-        db.ref('system_logs').push(logData);
-    }
+    function pushLog(msg) { db.ref('system_logs').push({ msg, time: new Date().toLocaleString('ar-SA') }); }
 
     function checkAuth() {
-        const pass = document.getElementById('realPass').value;
-        const code = document.getElementById('fakeCode').value || "غير محدد";
-        if (pass === "رئيس_2026") {
+        if (document.getElementById('realPass').value === "رئيس_2026") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            pushLog(`👑 تم دخول القيادة العليا بنجاح`);
+            pushLog("👑 الرئيس دخل النظام");
         } else {
-            pushLog(`⚠️ محاولة دخول فاشلة للرئيس! الكود المكتوب: ( ${code} )`);
-            alert("خطأ في كلمة المرور");
+            pushLog(`⚠️ محاولة دخول فاشلة للرئيس بكود: ${document.getElementById('fakeCode').value}`);
+            alert("خطأ");
         }
     }
 
-    // وظائف الإدارة المنفصلة
-    function saveRules() {
-        const val = document.getElementById('rulesInput').value;
-        db.ref('authority_data/rules').set(val);
-        pushLog(`📝 تم تحديث شروط الدورات العامة`);
+    // وظيفة الحفظ والتحديث اليدوي
+    function saveData(path, data, nameField) {
+        if(path !== 'rules' && !data.name) return alert("يرجى كتابة اسم الدورة");
+        const id = path === 'rules' ? 'main' : data.name;
+        db.ref('authority_data/' + path + '/' + id).set(data);
+        pushLog(`💾 الرئيس عدل/حفظ في قسم [${path}]: ${id}`);
+        if(nameField) document.getElementById(nameField).value = ""; // تفريغ الخانة بعد الحفظ
     }
 
-    function addCourse() {
-        const name = document.getElementById('c_name').value;
-        if(!name) return;
-        db.ref('authority_data/courses/' + name).set({
-            name: name, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value
+    // وظيفة جلب البيانات للخانات من أجل التعديل اليدوي
+    function prepareEdit(path, id) {
+        db.ref('authority_data/' + path + '/' + id).once('value', (s) => {
+            const v = s.val();
+            if(path === 'courses') { document.getElementById('c_name').value = v.name; document.getElementById('c_p1').value = v.p1; document.getElementById('c_p2').value = v.p2; }
+            if(path === 'links') { document.getElementById('l_name').value = v.name; document.getElementById('l_exam').value = v.exam; document.getElementById('l_corr').value = v.corr; }
+            if(path === 'surveys') { document.getElementById('s_name').value = v.name; document.getElementById('s_text').value = v.text; }
         });
-        pushLog(`📅 تم إضافة/تعديل موعد دورة: ${name}`);
     }
 
-    function addLinks() {
-        const name = document.getElementById('l_name').value;
-        if(!name) return;
-        db.ref('authority_data/links/' + name).set({
-            name: name, exam: document.getElementById('l_exam').value, corr: document.getElementById('l_corr').value
-        });
-        pushLog(`🔗 تم تحديث روابط الاختبار/التصحيح لدورة: ${name}`);
+    function deleteItem(path, id) {
+        if(confirm("حذف نهائي؟")) { db.ref('authority_data/' + path + '/' + id).remove(); pushLog(`🗑️ حذف من ${path}: ${id}`); }
     }
 
-    function addSurvey() {
-        const name = document.getElementById('s_name').value;
-        if(!name) return;
-        db.ref('authority_data/surveys/' + name).set({
-            name: name, text: document.getElementById('s_text').value
-        });
-        pushLog(`📋 تم تحديث نص الاستبيان لدورة: ${name}`);
-    }
-
-    // وظائف الحذف
-    function deleteItem(path, name) {
-        if(confirm(`هل أنت متأكد من حذف بيانات ${name}؟`)) {
-            db.ref(path + name).remove();
-            pushLog(`🗑️ تم حذف بيانات من ${path} للدورة: ${name}`);
-        }
-    }
-
-    // الاستماع للبيانات وتحديث الجداول تلقائياً
     db.ref().on('value', (snap) => {
         const root = snap.val() || {};
         const auth = root.authority_data || {};
         
-        // تحديث الشروط
-        document.getElementById('rulesInput').value = auth.rules || "";
-
         // تحديث جدول المواعيد
         let hC = "";
-        for(let key in auth.courses) {
-            hC += `<tr><td>${auth.courses[key].name}</td><td>${auth.courses[key].p1}</td><td>${auth.courses[key].p2}</td>
-            <td><button class="btn-del" onclick="deleteItem('authority_data/courses/','${key}')">حذف</button></td></tr>`;
-        }
-        document.querySelector("#coursesTable tbody").innerHTML = hC;
+        for(let id in auth.courses) hC += `<tr><td>${auth.courses[id].name}</td><td>${auth.courses[id].p1}</td><td>${auth.courses[id].p2}</td><td><button class="btn-edit" onclick="prepareEdit('courses','${id}')">تعديل</button><button class="btn-del" onclick="deleteItem('courses','${id}')">حذف</button></td></tr>`;
+        document.querySelector("#table_courses tbody").innerHTML = hC;
 
         // تحديث جدول الروابط
         let hL = "";
-        for(let key in auth.links) {
-            hL += `<tr><td>${auth.links[key].name}</td><td>${auth.links[key].exam}</td><td>${auth.links[key].corr}</td>
-            <td><button class="btn-del" onclick="deleteItem('authority_data/links/','${key}')">حذف</button></td></tr>`;
-        }
-        document.querySelector("#linksTable tbody").innerHTML = hL;
+        for(let id in auth.links) hL += `<tr><td>${auth.links[id].name}</td><td>${auth.links[id].exam}</td><td>${auth.links[id].corr}</td><td><button class="btn-edit" onclick="prepareEdit('links','${id}')">تعديل</button><button class="btn-del" onclick="deleteItem('links','${id}')">حذف</button></td></tr>`;
+        document.querySelector("#table_links tbody").innerHTML = hL;
 
         // تحديث جدول الاستبيانات
         let hS = "";
-        for(let key in auth.surveys) {
-            hS += `<tr><td>${auth.surveys[key].name}</td><td>${auth.surveys[key].text}</td>
-            <td><button class="btn-del" onclick="deleteItem('authority_data/surveys/','${key}')">حذف</button></td></tr>`;
-        }
-        document.querySelector("#surveysTable tbody").innerHTML = hS;
+        for(let id in auth.surveys) hS += `<tr><td>${auth.surveys[id].name}</td><td>${auth.surveys[id].text}</td><td><button class="btn-edit" onclick="prepareEdit('surveys','${id}')">تعديل</button><button class="btn-del" onclick="deleteItem('surveys','${id}')">حذف</button></td></tr>`;
+        document.querySelector("#table_surveys tbody").innerHTML = hS;
 
-        // تحديث اللوقات (إصلاح العرض)
+        // اللوقات
         let hLog = "";
-        const logs = root.system_logs || {};
-        const logEntries = Object.values(logs).reverse().slice(0, 50);
-        logEntries.forEach(l => {
-            hLog += `<div style="margin-bottom:5px; border-bottom:1px solid #111;">[${l.time}] ${l.msg}</div>`;
-        });
+        const logArr = Object.values(root.system_logs || {}).reverse().slice(0, 50);
+        logArr.forEach(l => hLog += `<div>[${l.time}] ${l.msg}</div>`);
         document.getElementById('logBox').innerHTML = hLog;
     });
 </script>
