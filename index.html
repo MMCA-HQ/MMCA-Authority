@@ -2,69 +2,112 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة المتقدمين - مارفل</title>
+    <title>بوابة المتقدمين | دولة مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; text-align: center; }
-        .box { max-width: 800px; margin: auto; background: #14160f; border: 1px solid var(--army); padding: 20px; border-radius: 8px; }
-        .sec { background: rgba(0,0,0,0.5); padding: 15px; margin-bottom: 20px; border-right: 4px solid var(--gold); text-align: right; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #222; padding: 10px; text-align: center; }
-        input, select { background:#000; color:#fff; border:1px solid #333; padding:10px; width:100%; margin:5px 0; }
-        .btn { background: var(--gold); border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 5px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
+        input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 8px 0; border-radius: 4px; box-sizing: border-box; }
+        .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #000; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
+        th { background: #1a1d12; color: var(--gold); }
+        .status-accepted { color: #2ecc71; font-weight: bold; }
+        .status-pending { color: #f1c40f; }
+        .status-passed { color: #3498db; font-weight: bold; }
+        .rules-box { white-space: pre-wrap; line-height: 1.6; color: #ddd; text-align: right; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1 style="color:var(--gold)">هيئة تنظيم الدورات العسكرية</h1>
-        
-        <div class="sec"><h3>| شروط الدورات</h3><div id="rules_view"></div></div>
 
-        <div class="sec"><h3>| مواعيد الدورات</h3><table id="courses_view"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table></div>
+    <h1 style="text-align: center; color: var(--gold);">هيئة تنظيم الدورات العسكرية - دولة مارفل</h1>
 
-        <div class="sec">
-            <h3>| استمارة التحاق</h3>
-            <input type="text" id="n" placeholder="الاسم كامل">
-            <input type="text" id="c" placeholder="الكود العسكري">
-            <select id="crs"><option value="">اختر الدورة</option></select>
-            <button class="btn" onclick="sendApp()">إرسال الطلب</button>
-        </div>
-
-        <div class="sec"><h3>| نتائج القبول والاجتياز</h3><table id="res_view"><thead><tr><th>الاسم</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead><tbody></tbody></table></div>
-        
-        <div style="margin-top:20px; color:var(--gold)">حقوق - دولة مارفل</div>
+    <div class="panel">
+        <h2>| شروط الدورات</h2>
+        <div id="rulesDisplay" class="rules-box">جاري تحميل الشروط...</div>
     </div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <div class="panel">
+        <h2>| مواعيد الدورات</h2>
+        <table>
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody id="coursesTable"><tr><td colspan="3">جاري تحميل المواعيد...</td></tr></tbody>
+        </table>
+    </div>
 
-    function sendApp() {
-        const data = { name: document.getElementById('n').value, code: document.getElementById('c').value, course: document.getElementById('crs').value, status: "قيد الانتظار", pass: "---" };
-        if(!data.name || !data.course) return alert("اكمل البيانات");
-        db.ref('applications').push(data);
-        db.ref('logs').push({ msg: `📩 تقديم جديد من: ${data.name} لدورة ${data.course}`, time: new Date().toLocaleString('ar-SA') });
-        alert("تم الإرسال");
-    }
+    <div class="panel">
+        <h2>| استبيانات الدورات</h2>
+        <div id="survDisplay"></div>
+    </div>
 
-    db.ref().on('value', snap => {
-        const d = snap.val() || {};
-        document.getElementById('rules_view').innerText = d.settings?.rules || "لا توجد شروط";
-        
-        let hC="", hOpt="<option value=''>اختر الدورة</option>", hR="";
-        for(let i in d.courses) {
-            hC += `<tr><td>${i}</td><td>${d.courses[i].p1}</td><td>${d.courses[i].p2}</td></tr>`;
-            hOpt += `<option value="${i}">${i}</option>`;
-        }
-        for(let i in d.applications) hR += `<tr><td>${d.applications[i].name}</td><td>${d.applications[i].course}</td><td>${d.applications[i].status}</td><td>${d.applications[i].pass}</td></tr>`;
-        
-        document.querySelector("#courses_view tbody").innerHTML = hC;
-        document.getElementById('crs').innerHTML = hOpt;
-        document.querySelector("#res_view tbody").innerHTML = hR;
-    });
-</script>
+    <div class="panel">
+        <h2>أولاً: نتائج القبول المبدئي</h2>
+        <table id="accTable">
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
+            <tbody id="acceptanceBody"></tbody>
+        </table>
+    </div>
+
+    <div class="panel" style="border-color: var(--gold);">
+        <h2 style="color: var(--gold);">ثانياً: لوحة الشرف</h2>
+        <table id="passTable">
+            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
+            <tbody id="passingBody"></tbody>
+        </table>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
+            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+
+        // جلب البيانات فوراً عند أي تغيير في لوحة الرئيس
+        db.ref().on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            const auth = data.authority_data || {};
+            const apps = data.applications || {};
+
+            // تحديث الشروط
+            document.getElementById('rulesDisplay').innerText = auth.rules || "لا توجد شروط حالياً.";
+
+            // تحديث المواعيد
+            let cHtml = "";
+            for(let id in auth.courses) {
+                const c = auth.courses[id];
+                cHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
+            }
+            document.getElementById('coursesTable').innerHTML = cHtml || '<tr><td colspan="3">لا توجد مواعيد</td></tr>';
+
+            // تحديث الاستبيانات (نصي)
+            let sHtml = "";
+            for(let id in auth.surveys) {
+                const s = auth.surveys[id];
+                sHtml += `<div style="background:#000; padding:10px; border:1px dashed var(--gold); margin-bottom:10px;">
+                            <b style="color:var(--gold)">${s.course}:</b><br>${s.url}
+                          </div>`;
+            }
+            document.getElementById('survDisplay').innerHTML = sHtml || "لا توجد استبيانات حالياً.";
+
+            // تحديث نتائج القبول والاجتياز
+            let accHtml = "";
+            let passHtml = "";
+            for(let id in apps) {
+                const a = apps[id];
+                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${a.status==='مقبول'?'status-accepted':'status-pending'}">${a.status}</td></tr>`;
+                if(a.pass === 'ناجح') {
+                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="status-passed">ناجح</td></tr>`;
+                }
+            }
+            document.getElementById('acceptanceBody').innerHTML = accHtml;
+            document.getElementById('passingBody').innerHTML = passHtml;
+        });
+    </script>
 </body>
 </html>
