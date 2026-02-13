@@ -1,54 +1,88 @@
-<script>
-    let admCode = prompt("الكود العسكري:");
-    let p = prompt("الرمز السري:");
-    if (p === "مشرف_2026") { document.body.style.display="block"; } else { window.location.href="index.html"; }
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة المشرفين | دولة مارفل</title>
+    <style>
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; background: #000; margin-bottom: 10px; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
+        th { background: #1a1d12; color: var(--gold); }
+        .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
+        .btn-accept { background: #2ecc71; color: #000; }
+        .btn-reject { background: #e74c3c; color: #fff; }
+        .footer { margin-top: 50px; text-align: center; color: var(--gold); }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
 
-    const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <div class="panel">
+        <h2>| مواعيد الدورات العامة</h2>
+        <table id="mainSched">
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-    // إرسال لوق دخول المشرف
-    db.ref('authority_data/logs').push({ msg: `🔓 دخل المشرف: ${admCode}`, time: new Date().toLocaleString('ar-SA') });
+    <div class="panel">
+        <h2>| إدارة طلبات القبول</h2>
+        <table>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار والحالة</th></tr></thead>
+            <tbody id="admAcc"></tbody>
+        </table>
+    </div>
 
-    function setStatus(id, name, val) {
-        db.ref('applications/' + id).update({ status: val });
-        db.ref('authority_data/logs').push({ msg: `⚙️ المشرف ${admCode} حدد حالة ${name} بـ ${val}`, time: new Date().toLocaleString('ar-SA') });
-    }
+    <div class="panel">
+        <h2>| رصد نتائج الاجتياز</h2>
+        <table>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
+            <tbody id="admPass"></tbody>
+        </table>
+    </div>
 
-    function setPass(id, name, val) {
-        db.ref('applications/' + id).update({ pass: val });
-        db.ref('authority_data/logs').push({ msg: `🏆 المشرف ${admCode} حدد نتيجة ${name} بـ ${val}`, time: new Date().toLocaleString('ar-SA') });
-    }
+    <div class="footer"><p>حقوق - دولة مارفل</p></div>
 
-    db.ref().on('value', snap => {
-        const root = snap.val() || {};
-        const auth = root.authority_data || {};
-        const apps = root.applications || {};
-        
-        let hAcc = "", hPass = "", hPer = "", hSched = "";
-        for(let id in apps) {
-            let a = apps[id];
-            hAcc += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                <button class="btn-action btn-accept" onclick="setStatus('${id}','${a.name}','مقبول')">قبول</button>
-                <button class="btn-action btn-reject" onclick="setStatus('${id}','${a.name}','مرفوض')">رفض</button>
-            </td></tr>`;
-            if(a.status === 'مقبول') {
-                hPer += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${a.period}</td></tr>`;
-                hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                    <button class="btn-action btn-accept" onclick="setPass('${id}','${a.name}','ناجح')">ناجح</button>
-                    <button class="btn-action btn-reject" onclick="setPass('${id}','${a.name}','راسب')">راسب</button>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        let p = prompt("الرمز السري للمشرفين:");
+        if (p === "مشرف_2026") { document.body.style.display="block"; } else { window.location.href="index.html"; }
+
+        const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function setStatus(id, val) { db.ref('applications/' + id).update({ status: val }); }
+        function setPass(id, val) { db.ref('applications/' + id).update({ pass: val }); }
+
+        db.ref().on('value', (snap) => {
+            const data = snap.val() || {}; const apps = data.applications || {}; const auth = data.authority_data || {};
+            let hAcc = "", hPass = "", hSched = "";
+            for(let id in apps) {
+                let a = apps[id];
+                hAcc += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
+                    <button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button>
+                    <button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button>
                 </td></tr>`;
+                if(a.status === 'مقبول') {
+                    hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
+                        <button class="btn-action btn-accept" onclick="setPass('${id}','ناجح')">ناجح</button>
+                        <button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button>
+                    </td></tr>`;
+                }
             }
-        }
-        document.getElementById('admAcc').innerHTML = hAcc;
-        document.getElementById('admPass').innerHTML = hPass;
-        document.getElementById('admPeriods').innerHTML = hPer;
-        
-        // عرض مواعيد الدورات للمشرف
-        for(let i in auth.courses) {
-            let c = auth.courses[i];
-            hSched += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
-        }
-        document.querySelector("#mainSched tbody").innerHTML = hSched;
-    });
-</script>
+            for(let i in auth.courses) {
+                let c = auth.courses[i];
+                hSched += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
+            }
+            document.getElementById('admAcc').innerHTML = hAcc;
+            document.getElementById('admPass').innerHTML = hPass;
+            document.querySelector("#mainSched tbody").innerHTML = hSched;
+        });
+    </script>
+</body>
+</html>
