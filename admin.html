@@ -6,149 +6,57 @@
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; text-align: right; border-radius: 5px; }
-        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; font-size: 1.2rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
-        th, td { border: 1px solid var(--army); padding: 10px; text-align: center; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; background: #000; margin-bottom: 10px; }
+        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
-        .btn-link { background: var(--gold); color: #000; padding: 10px 15px; text-decoration: none; font-weight: bold; margin: 5px; display: inline-block; border-radius: 4px; border:none; cursor:pointer; }
-        .btn-correct { background: #3498db; color: #fff; }
-        .action-btn { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
-        .accept { background: #2ecc71; color: #000; }
-        .reject { background: #e74c3c; color: #fff; }
-        /* تصميم صندوق الاستبيان النصي الجديد */
-        .survey-box { background: #000; padding: 20px; border: 1px solid var(--gold); margin-bottom: 15px; border-radius: 8px; line-height: 1.6; }
-        .survey-title { color: var(--gold); font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid var(--army); padding-bottom: 10px; margin-bottom: 10px; display: block; }
-        .survey-content { color: #fff; white-space: pre-wrap; word-wrap: break-word; }
+        .status-txt { font-size: 0.85rem; margin-top: 5px; font-weight: bold; display: block; }
+        .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
+        .btn-accept { background: #2ecc71; color: #000; }
+        .btn-reject { background: #e74c3c; color: #fff; }
+        .link-box { background: var(--gold); color: #000; padding: 10px 15px; text-decoration: none; font-weight: bold; margin: 5px; display: inline-block; border-radius: 4px; }
+        .link-corr { background: #3498db; color: #fff; }
+        .survey-card { background: #000; padding: 15px; border: 1px dashed var(--gold); margin-bottom: 10px; border-radius: 4px; line-height: 1.6; }
+        .survey-card b { color: var(--gold); display: block; margin-bottom: 5px; }
+        .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
+        .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
     <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
 
     <div class="panel">
-        <h2>مواعيد الدورات</h2>
-        <table id="schedAdmin">
+        <h2>| مواعيد الدورات العامة</h2>
+        <table id="mainSched">
             <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>إدارة طلبات القبول المبدئي</h2>
+        <h2>| إدارة طلبات القبول</h2>
         <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار</th></tr></thead>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار والحالة</th></tr></thead>
             <tbody id="admAcc"></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>رصد نتائج الاجتياز (للمقبولين فقط)</h2>
+        <h2>| رصد نتائج الاجتياز</h2>
         <table>
             <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
             <tbody id="admPass"></tbody>
         </table>
     </div>
 
-    <div class="panel">
-        <h2>روابط الاختبارات</h2>
-        <div id="linksView"></div>
+    <div class="panel" style="border: 1px solid var(--gold);">
+        <h2>| مواعيد الدورات للمقبولين</h2>
+        <table>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الفترة المختارة</th></tr></thead>
+            <tbody id="admPeriods"></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>روابط التصحيح</h2>
-        <div id="correctLinksView"></div>
-    </div>
-
-    <div class="panel">
-        <h2>استبيانات الدورات (نصوص)</h2>
-        <div id="survView"></div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script>
-        // نظام الحماية
-        let pass = prompt("الرجاء إدخال رمز الدخول لمشرفي الدورات:");
-        if (pass === "مشرف_2026") {
-            document.body.style.display = "block";
-        } else {
-            alert("غير مصرح لك بالدخول.");
-            window.location.href = "index.html";
-        }
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM",
-            databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        function upd(id, field, val) {
-            db.ref('applications/' + id).update({ [field]: val });
-        }
-
-        db.ref().on('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            const auth = data.authority_data || {};
-            const apps = data.applications || {};
-
-            // 1. عرض المواعيد
-            let courseHtml = "";
-            for(let id in auth.courses) {
-                const c = auth.courses[id];
-                courseHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
-            }
-            document.querySelector('#schedAdmin tbody').innerHTML = courseHtml;
-
-            // 2. عرض المتقدمين والنتائج
-            let accHtml = "";
-            let passHtml = "";
-            for(let id in apps) {
-                const a = apps[id];
-                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                    <button class="action-btn accept" onclick="upd('${id}','status','مقبول')">قبول</button>
-                    <button class="action-btn reject" onclick="upd('${id}','status','مرفوض')">رفض</button>
-                    <div style="font-size:0.8rem; color:var(--gold)">الحالة الحالية: ${a.status}</div>
-                </td></tr>`;
-
-                if(a.status === 'مقبول') {
-                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                        <button class="action-btn accept" onclick="upd('${id}','pass','ناجح')">ناجح</button>
-                        <button class="action-btn reject" onclick="upd('${id}','pass','راسب')">راسب</button>
-                        <div style="font-size:0.8rem; color:var(--gold)">النتيجة: ${a.pass || 'بانتظار الدورة'}</div>
-                    </td></tr>`;
-                }
-            }
-            document.getElementById('admAcc').innerHTML = accHtml;
-            document.getElementById('admPass').innerHTML = passHtml || "<tr><td colspan='4'>لا يوجد مقبولين حالياً</td></tr>";
-
-            // 3. روابط الاختبارات
-            let exHtml = "";
-            for(let id in auth.exams) {
-                exHtml += `<a href="${auth.exams[id].url}" target="_blank" class="btn-link">${auth.exams[id].course}</a>`;
-            }
-            document.getElementById('linksView').innerHTML = exHtml;
-
-            // 4. روابط التصحيح
-            let coHtml = "";
-            for(let id in auth.correction) {
-                coHtml += `<a href="${auth.correction[id].url}" target="_blank" class="btn-link btn-correct">${auth.correction[id].course}</a>`;
-            }
-            document.getElementById('correctLinksView').innerHTML = coHtml;
-
-            // 5. استبيانات الدورات (تعديل لعرض النص المكتوب)
-            let svHtml = "";
-            for(let id in auth.surveys) {
-                const s = auth.surveys[id];
-                svHtml += `
-                <div class="survey-box">
-                    <span class="survey-title">اسم الدورة: ${s.course}</span>
-                    <div class="survey-content"><b>نص الاستبيان:</b><br>${s.url}</div>
-                </div>`;
-            }
-            document.getElementById('survView').innerHTML = svHtml || "لا توجد استبيانات مضافة حالياً";
-        });
-    </script>
-</body>
-</html>
+        <h2>| روابط الاختبارات</h2>
