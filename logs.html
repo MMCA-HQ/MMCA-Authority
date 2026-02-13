@@ -9,13 +9,18 @@
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #14160f; border: 1px solid var(--army); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
-        .btn-main { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
+        .btn-main:hover { opacity: 0.8; }
         #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.2rem; }
         input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 4px; margin: 5px; }
-        .log-box { background: #000; height: 300px; overflow-y: auto; padding: 15px; border: 1px solid #222; font-family: monospace; color: #00ff00; }
-        .footer { text-align: center; padding: 20px; color: var(--gold); border-top: 1px solid var(--army); }
+        table { width: 100%; border-collapse: collapse; background: #080905; margin-top: 15px; }
+        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
+        th { color: var(--gold); background: #0d0e0a; }
+        .btn-del { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+        .log-box { background: #000; height: 300px; overflow-y: auto; padding: 15px; border: 1px solid #222; font-family: monospace; color: #00ff00; border-radius: 4px; }
+        .footer { text-align: center; padding: 20px; color: var(--gold); border-top: 1px solid var(--army); margin-top: 40px; }
     </style>
 </head>
 <body>
@@ -33,18 +38,54 @@
     <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة القيادة - مارفل</h1>
 
     <div class="panel">
-        <h2>| إدارة محتوى الدورات (شروط، مواعيد، روابط، استبيانات)</h2>
-        <input type="text" id="m_name" placeholder="اسم الدورة">
-        <input type="text" id="m_p1" placeholder="الفترة 1">
-        <input type="text" id="m_p2" placeholder="الفترة 2">
-        <input type="text" id="m_exam" placeholder="رابط الاختبار">
-        <input type="text" id="m_corr" placeholder="رابط التصحيح">
-        <textarea id="m_survey" placeholder="نص الاستبيان الواضح" style="width:90%; height:60px;"></textarea>
-        <button class="btn-main" onclick="saveData()">حفظ البيانات</button>
+        <h2>| إدارة الشروط والضوابط</h2>
+        <textarea id="rulesInput" style="width:95%; height:80px;" placeholder="أدخل نص الشروط الجديد..."></textarea>
+        <button class="btn-main" style="margin-top:10px" onclick="saveRules()">حفظ وتحديث الشروط</button>
     </div>
 
     <div class="panel">
-        <h2>| سجل اللوقات المركزي (الدخول والعمليات)</h2>
+        <h2>| إدارة مواعيد الدورات</h2>
+        <div class="controls">
+            <input type="text" id="c_name" placeholder="اسم الدورة">
+            <input type="text" id="c_p1" placeholder="الفترة 1">
+            <input type="text" id="c_p2" placeholder="الفترة 2">
+            <button class="btn-main" onclick="addCourse()">إضافة/تحديث موعد</button>
+        </div>
+        <table id="coursesTable">
+            <thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>إجراء</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| إدارة روابط الاختبارات والتصحيح</h2>
+        <div class="controls">
+            <input type="text" id="l_name" placeholder="اسم الدورة">
+            <input type="text" id="l_exam" placeholder="رابط الاختبار">
+            <input type="text" id="l_corr" placeholder="رابط التصحيح">
+            <button class="btn-main" onclick="addLinks()">إضافة/تحديث الروابط</button>
+        </div>
+        <table id="linksTable">
+            <thead><tr><th>الدورة</th><th>رابط الاختبار</th><th>رابط التصحيح</th><th>إجراء</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| إدارة استبيانات الدورات</h2>
+        <div class="controls">
+            <input type="text" id="s_name" placeholder="اسم الدورة">
+            <textarea id="s_text" placeholder="نص الاستبيان الواضح..." style="width: 400px; height: 40px;"></textarea>
+            <button class="btn-main" onclick="addSurvey()">إضافة/تحديث الاستبيان</button>
+        </div>
+        <table id="surveysTable">
+            <thead><tr><th>الدورة</th><th>نص الاستبيان</th><th>إجراء</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| سجل مراقبة النظام (Logs) - بث مباشر</h2>
         <div id="logBox" class="log-box"></div>
     </div>
 
@@ -58,35 +99,107 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function pushLog(msg) { db.ref('system_logs').push({ msg, time: new Date().toLocaleString('ar-SA') }); }
+    // إصلاح نظام اللوقات ليعمل فوراً
+    function pushLog(msg) {
+        const logData = { msg: msg, time: new Date().toLocaleString('ar-SA') };
+        db.ref('system_logs').push(logData);
+    }
 
     function checkAuth() {
-        if (document.getElementById('realPass').value === "رئيس_2026") {
+        const pass = document.getElementById('realPass').value;
+        const code = document.getElementById('fakeCode').value || "غير محدد";
+        if (pass === "رئيس_2026") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            pushLog(`👑 دخول ناجح للرئيس`);
+            pushLog(`👑 تم دخول القيادة العليا بنجاح`);
         } else {
-            pushLog(`⚠️ محاولة دخول فاشلة للرئيس! الكود: (${document.getElementById('fakeCode').value || 'فارغ'})`);
-            alert("خطأ");
+            pushLog(`⚠️ محاولة دخول فاشلة للرئيس! الكود المكتوب: ( ${code} )`);
+            alert("خطأ في كلمة المرور");
         }
     }
 
-    function saveData() {
-        const name = document.getElementById('m_name').value;
-        const data = { 
-            name, p1: document.getElementById('m_p1').value, p2: document.getElementById('m_p2').value,
-            exam: document.getElementById('m_exam').value, corr: document.getElementById('m_corr').value, survey: document.getElementById('m_survey').value
-        };
-        db.ref('authority_data/assets/'+name).set(data);
-        db.ref('authority_data/courses/'+name).set({name, p1: data.p1, p2: data.p2});
-        pushLog(`🛠️ الرئيس عدل بيانات دورة: ${name}`);
+    // وظائف الإدارة المنفصلة
+    function saveRules() {
+        const val = document.getElementById('rulesInput').value;
+        db.ref('authority_data/rules').set(val);
+        pushLog(`📝 تم تحديث شروط الدورات العامة`);
     }
 
-    db.ref('system_logs').on('value', (snap) => {
+    function addCourse() {
+        const name = document.getElementById('c_name').value;
+        if(!name) return;
+        db.ref('authority_data/courses/' + name).set({
+            name: name, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value
+        });
+        pushLog(`📅 تم إضافة/تعديل موعد دورة: ${name}`);
+    }
+
+    function addLinks() {
+        const name = document.getElementById('l_name').value;
+        if(!name) return;
+        db.ref('authority_data/links/' + name).set({
+            name: name, exam: document.getElementById('l_exam').value, corr: document.getElementById('l_corr').value
+        });
+        pushLog(`🔗 تم تحديث روابط الاختبار/التصحيح لدورة: ${name}`);
+    }
+
+    function addSurvey() {
+        const name = document.getElementById('s_name').value;
+        if(!name) return;
+        db.ref('authority_data/surveys/' + name).set({
+            name: name, text: document.getElementById('s_text').value
+        });
+        pushLog(`📋 تم تحديث نص الاستبيان لدورة: ${name}`);
+    }
+
+    // وظائف الحذف
+    function deleteItem(path, name) {
+        if(confirm(`هل أنت متأكد من حذف بيانات ${name}؟`)) {
+            db.ref(path + name).remove();
+            pushLog(`🗑️ تم حذف بيانات من ${path} للدورة: ${name}`);
+        }
+    }
+
+    // الاستماع للبيانات وتحديث الجداول تلقائياً
+    db.ref().on('value', (snap) => {
+        const root = snap.val() || {};
+        const auth = root.authority_data || {};
+        
+        // تحديث الشروط
+        document.getElementById('rulesInput').value = auth.rules || "";
+
+        // تحديث جدول المواعيد
+        let hC = "";
+        for(let key in auth.courses) {
+            hC += `<tr><td>${auth.courses[key].name}</td><td>${auth.courses[key].p1}</td><td>${auth.courses[key].p2}</td>
+            <td><button class="btn-del" onclick="deleteItem('authority_data/courses/','${key}')">حذف</button></td></tr>`;
+        }
+        document.querySelector("#coursesTable tbody").innerHTML = hC;
+
+        // تحديث جدول الروابط
         let hL = "";
-        const logs = snap.val() || {};
-        Object.values(logs).reverse().slice(0, 100).forEach(l => hL += `<div>[${l.time}] ${l.msg}</div>`);
-        document.getElementById('logBox').innerHTML = hL;
+        for(let key in auth.links) {
+            hL += `<tr><td>${auth.links[key].name}</td><td>${auth.links[key].exam}</td><td>${auth.links[key].corr}</td>
+            <td><button class="btn-del" onclick="deleteItem('authority_data/links/','${key}')">حذف</button></td></tr>`;
+        }
+        document.querySelector("#linksTable tbody").innerHTML = hL;
+
+        // تحديث جدول الاستبيانات
+        let hS = "";
+        for(let key in auth.surveys) {
+            hS += `<tr><td>${auth.surveys[key].name}</td><td>${auth.surveys[key].text}</td>
+            <td><button class="btn-del" onclick="deleteItem('authority_data/surveys/','${key}')">حذف</button></td></tr>`;
+        }
+        document.querySelector("#surveysTable tbody").innerHTML = hS;
+
+        // تحديث اللوقات (إصلاح العرض)
+        let hLog = "";
+        const logs = root.system_logs || {};
+        const logEntries = Object.values(logs).reverse().slice(0, 50);
+        logEntries.forEach(l => {
+            hLog += `<div style="margin-bottom:5px; border-bottom:1px solid #111;">[${l.time}] ${l.msg}</div>`;
+        });
+        document.getElementById('logBox').innerHTML = hLog;
     });
 </script>
 </body>
