@@ -2,61 +2,48 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>القيادة العليا - مارفل</title>
+    <title>لوحة الرئيس</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: #14160f; border: 1px solid var(--army); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
-        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
-        .btn-main { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; width: 100%; }
-        #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
-        input, textarea, select { background: #000; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 4px; margin: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; }
-        th { color: var(--gold); background: #0d0e0a; }
-        .btn-del { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
-        .btn-edit { background: #2980b9; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+        input, textarea { background:#000; color:#fff; border:1px solid #333; padding:10px; margin:5px; border-radius:5px; }
+        .btn-main { background:var(--gold); border:none; padding:10px 20px; font-weight:bold; cursor:pointer; }
+        .log-box { background:#000; height:300px; overflow-y:scroll; padding:15px; color:#00ff00; border:1px solid #333; font-family:monospace; }
     </style>
 </head>
 <body>
-
-<div id="loginOverlay">
-    <div class="login-box">
-        <h2 style="color:var(--gold)">بوابة القيادة العليا</h2>
-        <input type="password" id="realPass" placeholder="كلمة المرور">
-        <button class="btn-main" onclick="checkAuth()">دخول</button>
-    </div>
-</div>
-
-<div id="mainContent">
-    <h1 style="text-align: center; color: var(--gold);">لوحة التحكم المركزية</h1>
-
-    <div class="panel">
-        <h2>| شروط الدورات</h2>
-        <textarea id="rulesInput" style="width:95%; height:60px;"></textarea>
-        <button class="btn-main" style="width:auto" onclick="db.ref('settings/rules').set(document.getElementById('rulesInput').value)">حفظ الشروط</button>
+    <div id="loginOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:999;">
+        <div style="background:#14160f; padding:30px; border:1px solid var(--army); text-align:center;">
+            <h2 style="color:var(--gold)">لوحة التحكم العليا</h2>
+            <input type="password" id="resPass" placeholder="كلمة المرور" style="width:100%">
+            <button onclick="login()" class="btn-main" style="width:100%; margin-top:10px;">دخول</button>
+        </div>
     </div>
 
-    <div class="panel">
-        <h2>| مواعيد الدورات</h2>
-        <input type="text" id="c_name" placeholder="اسم الدورة">
-        <input type="text" id="c_p1" placeholder="ف1">
-        <input type="text" id="c_p2" placeholder="ف2">
-        <button class="btn-main" style="width:auto" onclick="saveCourse()">إضافة/تعديل</button>
-        <table id="t_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>إجراء</th></tr></thead><tbody></tbody></table>
-    </div>
+    <div id="resContent" style="display:none;">
+        <h1>لوحة الرئيس - إدارة شاملة</h1>
 
-    <div class="panel">
-        <h2>| استمارات التقديم والنتائج</h2>
-        <table id="t_apps">
-            <thead><tr><th>المتقدم</th><th>ID</th><th>الدورة</th><th>حالة القبول</th><th>حالة الاجتياز</th><th>إجراء</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <div class="panel">
+            <h2>| إضافة الشروط</h2>
+            <textarea id="rulesInput" style="width:90%; height:60px;"></textarea><br>
+            <button class="btn-main" onclick="db.ref('data/rules').set(document.getElementById('rulesInput').value)">حفظ الشروط</button>
+        </div>
+
+        <div class="panel">
+            <h2>| إدارة المواعيد</h2>
+            <input type="text" id="c_name" placeholder="اسم الدورة">
+            <input type="text" id="c_p1" placeholder="ف1">
+            <input type="text" id="c_p2" placeholder="ف2">
+            <button class="btn-main" onclick="saveData('courses', {name:document.getElementById('c_name').value, p1:document.getElementById('c_p1').value, p2:document.getElementById('c_p2').value}, 'c_name')">حفظ/تحديث</button>
+            <div id="res_courses_table"></div>
+        </div>
+
+        <div class="panel">
+            <h2>| سجل اللوقات (دائم)</h2>
+            <div id="logBox" class="log-box"></div>
+        </div>
     </div>
-</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -65,40 +52,27 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function checkAuth() {
-        if(document.getElementById('realPass').value === "رئيس_2026") {
+    function login() {
+        if(document.getElementById('resPass').value === "رئيس_2026") {
             document.getElementById('loginOverlay').style.display='none';
-            document.getElementById('mainContent').style.display='block';
+            document.getElementById('resContent').style.display='block';
+            db.ref('logs').push({ msg: "👑 الرئيس دخل النظام", time: new Date().toLocaleString('ar-SA') });
         } else { alert("خطأ"); }
     }
 
-    function saveCourse() {
-        let n = document.getElementById('c_name').value;
-        if(!n) return;
-        db.ref('courses/'+n).set({name:n, p1:document.getElementById('c_p1').value, p2:document.getElementById('c_p2').value});
-        document.getElementById('c_name').value="";
+    function saveData(path, data, resetId) {
+        db.ref(path+'/'+data.name).set(data);
+        db.ref('logs').push({ msg: `🛠️ الرئيس أضاف/عدل في ${path}: ${data.name}`, time: new Date().toLocaleString('ar-SA') });
+        document.getElementById(resetId).value = "";
     }
 
     db.ref().on('value', snap => {
-        const data = snap.val() || {};
-        document.getElementById('rulesInput').value = (data.settings || {}).rules || "";
-        
-        let hC="", hA="";
-        for(let i in data.courses) hC += `<tr><td>${data.courses[i].name}</td><td>${data.courses[i].p1}</td><td>${data.courses[i].p2}</td><td><button class="btn-edit" onclick="editCourse('${i}')">تعديل</button> <button class="btn-del" onclick="db.ref('courses/${i}').remove()">حذف</button></td></tr>`;
-        for(let i in data.applications) hA += `<tr><td>${data.applications[i].name}</td><td>${data.applications[i].discordID}</td><td>${data.applications[i].course}</td><td>${data.applications[i].status || 'قيد الانتظار'}</td><td>${data.applications[i].pass || '---'}</td><td><button class="btn-del" onclick="db.ref('applications/${i}').remove()">حذف</button></td></tr>`;
-        
-        document.querySelector("#t_courses tbody").innerHTML = hC;
-        document.querySelector("#t_apps tbody").innerHTML = hA;
+        const val = snap.val() || {};
+        let hLog = "";
+        const logs = Object.values(val.logs || {}).reverse();
+        logs.forEach(l => hLog += `<div>[${l.time}] ${l.msg}</div>`);
+        document.getElementById('logBox').innerHTML = hLog;
     });
-
-    function editCourse(id) {
-        db.ref('courses/'+id).once('value', s => {
-            let v = s.val();
-            document.getElementById('c_name').value=v.name;
-            document.getElementById('c_p1').value=v.p1;
-            document.getElementById('c_p2').value=v.p2;
-        });
-    }
 </script>
 </body>
 </html>
