@@ -2,110 +2,204 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>القيادة العليا - مارفل</title>
+    <title>لوحة الرئيس | دولة مارفل</title>
     <style>
-        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 20px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 10px; }
-        input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 8px; margin: 5px; border-radius: 4px; width: 250px; }
-        .btn-gold { background: var(--gold); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        .log-box { background: #000; height: 250px; overflow-y: auto; padding: 15px; border: 1px solid #222; color: #00ff00; font-family: monospace; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #222; padding: 8px; text-align: center; font-size: 0.9rem; }
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; --gray: #1a1d12; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
+        
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.4rem; }
+        
+        .admin-controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: stretch; flex-direction: row-reverse; }
+        input, textarea { 
+            background: #000; color: #fff; border: 1px solid #333; padding: 12px; 
+            border-radius: 4px; flex: 1; font-family: Tahoma; text-align: center;
+        }
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 0 20px; cursor: pointer; font-weight: bold; border-radius: 4px; min-width: 120px; }
+        
+        table { width: 100%; border-collapse: collapse; background: #080905; }
+        th, td { border: 1px solid #1a1d12; padding: 12px; text-align: center; }
+        th { color: var(--gold); background: #0d0e0a; font-weight: normal; }
+        
+        .btn-edit { background: #3498db; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-left: 5px; }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+
+        .footer { margin-top: 50px; padding: 25px; border-top: 1px solid var(--army); text-align: center; }
+        .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="loginOverlay">
-    <div style="background:#14160f; padding:40px; border:1px solid var(--army); text-align:center; border-radius:8px;">
-        <h2 style="color:var(--gold)">بوابة الرئيس</h2>
-        <input type="password" id="pass" placeholder="كلمة المرور" style="width:100%"><br><br>
-        <button class="btn-gold" onclick="login()" style="width:100%">دخول</button>
-    </div>
-</div>
-
-<div id="content" style="display:none;">
-    <h1>لوحة القيادة العليا - مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة التحكم العليا - دولة مارفل</h1>
 
     <div class="panel">
-        <h2>| إدارة الشروط</h2>
-        <textarea id="rules" style="width:90%; height:50px;"></textarea><br>
-        <button class="btn-gold" onclick="updateRules()">حفظ الشروط</button>
+        <h2>| تعديل الشروط والضوابط</h2>
+        <textarea id="rulesText" style="width: 100%; height: 100px; margin-bottom: 10px;" placeholder="نص الشروط..."></textarea>
+        <button class="btn-main" style="width: 100%; height: 45px;" onclick="saveRules()">حفظ الشروط والضوابط</button>
     </div>
 
     <div class="panel">
-        <h2>| إدارة المواعيد</h2>
-        <input type="text" id="c_name" placeholder="اسم الدورة">
-        <input type="text" id="c_p1" placeholder="الفترة الأولى">
-        <input type="text" id="c_p2" placeholder="الفترة الثانية">
-        <button class="btn-gold" onclick="saveItem('courses', 'c_name', ['p1','p2'], ['c_p1','c_p2'])">إضافة/تعديل</button>
-        <table id="table_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>إجراء</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة الدورات والمواعيد</h2>
+        <div class="admin-controls">
+            <button class="btn-main" onclick="saveData('courses')">إضافة / تحديث</button>
+            <input type="text" id="c_p2" placeholder="الفترة 2">
+            <input type="text" id="c_p1" placeholder="الفترة 1">
+            <input type="text" id="c_name" placeholder="اسم الدورة">
+            <input type="hidden" id="c_id">
+        </div>
+        <table>
+            <thead><tr><th>الدورة</th><th>ف 1</th><th>ف 2</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_courses"></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>| إدارة الروابط والاستبيانات</h2>
-        <input type="text" id="l_name" placeholder="اسم الدورة">
-        <input type="text" id="l_test" placeholder="رابط الاختبار">
-        <input type="text" id="l_corr" placeholder="رابط التصحيح">
-        <input type="text" id="l_surv" placeholder="نص الاستبيان">
-        <button class="btn-gold" onclick="saveItem('links', 'l_name', ['test','corr','surv'], ['l_test','l_corr','l_surv'])">حفظ</button>
-        <table id="table_links"><thead><tr><th>الدورة</th><th>اختبار</th><th>تصحيح</th><th>استبيان</th><th>إجراء</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة روابط الاختبارات</h2>
+        <div class="admin-controls">
+            <button class="btn-main" onclick="saveData('exams')">إضافة / تحديث</button>
+            <input type="text" id="e_url" placeholder="رابط الاختبار (URL)">
+            <input type="text" id="e_name" placeholder="اسم الدورة">
+            <input type="hidden" id="e_id">
+        </div>
+        <table>
+            <thead><tr><th>اسم الدورة</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_exams"></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>| نظام اللوقات المتصل (Logs)</h2>
-        <div id="logBox" class="log-box"></div>
+        <h2>| إدارة روابط التصحيح</h2>
+        <div class="admin-controls">
+            <button class="btn-main" onclick="saveData('correction')">إضافة / تحديث</button>
+            <input type="text" id="co_url" placeholder="رابط التصحيح (URL)">
+            <input type="text" id="co_name" placeholder="اسم الدورة">
+            <input type="hidden" id="co_id">
+        </div>
+        <table>
+            <thead><tr><th>اسم الدورة</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_correction"></tbody>
+        </table>
     </div>
-</div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <div class="panel">
+        <h2>| إدارة استبيانات الدورات (نصوص)</h2>
+        <div class="admin-controls">
+            <button class="btn-main" onclick="saveData('surveys')">إضافة / تحديث</button>
+            <textarea id="s_text" placeholder="نص الاستبيان"></textarea>
+            <input type="text" id="s_name" placeholder="اسم الدورة">
+            <input type="hidden" id="s_id">
+        </div>
+        <table>
+            <thead><tr><th>الدورة</th><th>النص</th><th>التحكم</th></tr></thead>
+            <tbody id="tbody_surveys"></tbody>
+        </table>
+    </div>
 
-    function login() {
-        if(document.getElementById('pass').value === "رئيس_2026") {
-            document.getElementById('loginOverlay').style.display='none';
-            document.getElementById('content').style.display='block';
-            addLog("👑 الرئيس دخل النظام");
-        } else alert("خطأ");
-    }
+    <div class="panel" style="border-color: #e74c3c;">
+        <h2 style="color: #e74c3c; border-right-color: #e74c3c;">| إدارة شؤون المتقدمين (التحكم الفردي)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم المتقدم</th>
+                    <th>الكود</th>
+                    <th>حذف طلب القبول</th>
+                    <th>حذف نتيجة الاجتياز</th>
+                    <th>حذف المتقدم نهائياً</th>
+                </tr>
+            </thead>
+            <tbody id="tbody_manage_apps"></tbody>
+        </table>
+    </div>
 
-    function addLog(m) { db.ref('logs').push({ msg: m, time: new Date().toLocaleString('ar-SA') }); }
+    <div class="footer">
+        <p>حقوق - دولة مارفل</p>
+        <p style="color:#444; font-size:0.85rem;">هيئة تنظيم الدورات © 2026</p>
+    </div>
 
-    function updateRules() {
-        const val = document.getElementById('rules').value;
-        db.ref('settings/rules').set(val);
-        addLog("📝 تم تعديل الشروط العامة");
-    }
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        let p = prompt("الرمز السري:");
+        if (p === "رئيس_2026") { document.body.style.display="block"; } else { window.location.href="index.html"; }
 
-    function saveItem(path, nameId, keys, inputIds) {
-        const name = document.getElementById(nameId).value;
-        if(!name) return;
-        let data = { name: name };
-        keys.forEach((k, i) => data[k] = document.getElementById(inputIds[i]).value);
-        db.ref(path + '/' + name).set(data);
-        addLog(`🛠️ تعديل/إضافة في ${path}: ${name}`);
-        [nameId, ...inputIds].forEach(id => document.getElementById(id).value = "");
-    }
+        const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    db.ref().on('value', snap => {
-        const data = snap.val() || {};
-        // تحديث الجداول واللوقات فوراً
-        let hC="", hL="", hLogs="";
-        for(let i in data.courses) hC += `<tr><td>${i}</td><td>${data.courses[i].p1}</td><td>${data.courses[i].p2}</td><td><button onclick="db.ref('courses/${i}').remove()">حذف</button></td></tr>`;
-        for(let i in data.links) hL += `<tr><td>${i}</td><td>${data.links[i].test}</td><td>${data.links[i].corr}</td><td>${data.links[i].surv}</td><td><button onclick="db.ref('links/${i}').remove()">حذف</button></td></tr>`;
-        Object.values(data.logs || {}).reverse().forEach(l => hLogs += `<div>[${l.time}] ${l.msg}</div>`);
-        
-        document.querySelector("#table_courses tbody").innerHTML = hC;
-        document.querySelector("#table_links tbody").innerHTML = hL;
-        document.getElementById('logBox').innerHTML = hLogs;
-        document.getElementById('rules').value = data.settings?.rules || "";
-    });
-</script>
+        function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value); alert("تم الحفظ"); }
+
+        function saveData(path) {
+            let pre = path === 'courses' ? 'c' : path === 'exams' ? 'e' : path === 'correction' ? 'co' : 's';
+            let id = document.getElementById(pre+'_id').value;
+            let obj = {};
+
+            if(path === 'courses') {
+                obj = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
+            } else if(path === 'surveys') {
+                obj = { course: document.getElementById('s_name').value, url: document.getElementById('s_text').value };
+            } else {
+                obj = { course: document.getElementById(pre+'_name').value, url: document.getElementById(pre+'_url').value };
+            }
+
+            if(id) { db.ref('authority_data/'+path+'/'+id).update(obj); } 
+            else { db.ref('authority_data/'+path).push(obj); }
+            clearFields(pre);
+        }
+
+        function deleteItem(path, id) { if(confirm("حذف؟")) db.ref('authority_data/'+path+'/'+id).remove(); }
+
+        function editItem(path, id, data) {
+            let pre = path === 'courses' ? 'c' : path === 'exams' ? 'e' : path === 'correction' ? 'co' : 's';
+            document.getElementById(pre+'_id').value = id;
+            if(path === 'courses') {
+                document.getElementById('c_name').value = data.name; document.getElementById('c_p1').value = data.p1; document.getElementById('c_p2').value = data.p2;
+            } else if(path === 'surveys') {
+                document.getElementById('s_name').value = data.course; document.getElementById('s_text').value = data.url;
+            } else {
+                document.getElementById(pre+'_name').value = data.course; document.getElementById(pre+'_url').value = data.url;
+            }
+        }
+
+        function clearFields(pre) {
+            let f = pre === 'c' ? ['c_id','c_name','c_p1','c_p2'] : pre === 's' ? ['s_id','s_name','s_text'] : [pre+'_id', pre+'_name', pre+'_url'];
+            f.forEach(i => document.getElementById(i).value = "");
+        }
+
+        // دوال التحكم الفردي بالمتقدمين
+        function resetStatus(id) { if(confirm("حذف حالة القبول؟")) db.ref('applications/' + id).update({ status: "تحت المراجعة" }); }
+        function resetPass(id) { if(confirm("حذف نتيجة الاجتياز؟")) db.ref('applications/' + id).update({ pass: "بانتظار الدورة" }); }
+        function deleteApp(id) { if(confirm("حذف المتقدم نهائياً؟")) db.ref('applications/' + id).remove(); }
+
+        db.ref().on('value', (snap) => {
+            const root = snap.val() || {};
+            const data = root.authority_data || {};
+            const apps = root.applications || {};
+            document.getElementById('rulesText').value = data.rules || "";
+
+            ['courses', 'exams', 'correction', 'surveys'].forEach(path => {
+                let html = "";
+                for(let i in data[path]) {
+                    let item = data[path][i];
+                    html += `<tr>`;
+                    if(path === 'courses') { html += `<td>${item.name}</td><td>${item.p1}</td><td>${item.p2}</td>`; } 
+                    else if(path === 'surveys') { html += `<td>${item.course}</td><td>${item.url.substring(0,15)}...</td>`; } 
+                    else { html += `<td>${item.course}</td>`; }
+                    html += `<td><button class="btn-edit" onclick='editItem("${path}","${i}",${JSON.stringify(item)})'>تعديل</button>
+                                 <button class="btn-del" onclick="deleteItem('${path}','${i}')">حذف</button></td></tr>`;
+                }
+                document.getElementById('tbody_'+path).innerHTML = html;
+            });
+
+            // عرض جدول شؤون المتقدمين
+            let appHtml = "";
+            for(let id in apps) {
+                appHtml += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td>
+                    <td><button class="btn-del" style="background:#f39c12;" onclick="resetStatus('${id}')">حذف القبول</button></td>
+                    <td><button class="btn-del" style="background:#e67e22;" onclick="resetPass('${id}')">حذف الاجتياز</button></td>
+                    <td><button class="btn-del" onclick="deleteApp('${id}')">حذف نهائي</button></td></tr>`;
+            }
+            document.getElementById('tbody_manage_apps').innerHTML = appHtml;
+        });
+    </script>
 </body>
 </html>
