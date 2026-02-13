@@ -11,13 +11,14 @@
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
         .btn-login { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #mainContent { display: none; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #080905; }
-        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 25px; border-radius: 8px; }
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 15px; font-size: 1.1rem; }
+        table { width: 100%; border-collapse: collapse; background: #080905; margin-bottom: 10px; }
+        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.8rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 2px; }
-        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 2px; }
+        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .link-a { color: #3498db; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -27,26 +28,26 @@
         <h2 style="color:var(--gold)">بوابة المشرفين</h2>
         <input type="text" id="militaryCode" placeholder="الكود العسكري" value="">
         <input type="password" id="admPass" placeholder="كلمة المرور">
-        <button class="btn-login" onclick="checkAuth()">دخول النظام</button>
+        <button class="btn-login" onclick="checkAuth()">دخول</button>
     </div>
 </div>
 
 <div id="mainContent">
-    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة الميدان - مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة الميدان - مارفل</h1>
 
     <div class="panel">
         <h2>| إدارة المتقدمين (ID + الرولات)</h2>
         <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead>
+            <thead><tr><th>المتقدم</th><th>ID</th><th>الرولات</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead>
             <tbody id="tbody_apps"></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>| المواعيد والروابط التشغيلية</h2>
+        <h2>| المواعيد والروابط والمهام</h2>
         <table>
-            <thead><tr><th>اسم الدورة</th><th>ف1</th><th>ف2</th><th>المحتوى (رابط/استبيان)</th></tr></thead>
-            <tbody id="tbody_info"></tbody>
+            <thead><tr><th>اسم الدورة</th><th>النوع</th><th>المحتوى / الرابط</th></tr></thead>
+            <tbody id="tbody_tasks"></tbody>
         </table>
     </div>
 </div>
@@ -63,43 +64,42 @@
 
     function checkAuth() {
         const inputCode = document.getElementById('militaryCode').value || "غير معروف";
-        const pass = document.getElementById('admPass').value;
-        if (pass === "مشرف_2026") {
+        if (document.getElementById('admPass').value === "مشرف_2026") {
             currentCode = inputCode;
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             pushLog(`تم تسجيل الدخول باسم الكود العسكري ( ${currentCode} )`);
         } else {
-            pushLog(`⚠️ محاولة دخول فاشلة للمشرفين! الكود المستخدم: ( ${inputCode} )`);
-            alert("خطأ في بيانات الدخول");
+            pushLog(`⚠️ دخول فاشل للمشرفين! الكود: ( ${inputCode} )`);
+            alert("خطأ");
         }
     }
 
-    function updateStat(id, name, val, type) {
+    function updateAction(id, name, val, type) {
         let field = (type === 'stat') ? {status: val} : {pass: val};
         db.ref('applications/'+id).update(field);
-        let action = (val === 'مقبول') ? "تم قبول" : (val === 'مرفوض') ? "تم رفض" : (val === 'ناجح') ? "تم اجتياز" : "تم رسوب";
-        pushLog(`${action} المتقدم: ${name} بواسطة الكود ( ${currentCode} )`);
+        pushLog(`[${currentCode}] قام بـ ${val} للمتقدم: ${name}`);
     }
 
     db.ref().on('value', (snap) => {
         const root = snap.val() || {};
         const apps = root.applications || {};
-        const auth = root.authority_data || {};
+        const global = (root.authority_data || {}).global || {};
         
         let hA = "";
-        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td>${apps[id].course}</td>
-        <td><button class="btn-acc" onclick="updateStat('${id}','${apps[id].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateStat('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td>
-        <td><button class="btn-acc" style="background:#3498db" onclick="updateStat('${id}','${apps[id].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#e67e22" onclick="updateStat('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
+        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td>${apps[id].course}</td>
+        <td><button class="btn-acc" onclick="updateAction('${id}','${apps[id].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateAction('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td>
+        <td><button class="btn-acc" style="background:#3498db" onclick="updateAction('${id}','${apps[id].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#e67e22" onclick="updateAction('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
         document.getElementById('tbody_apps').innerHTML = hA;
 
-        let hI = "";
-        for(let i in auth.courses) {
-            let assets = "";
-            for(let a in auth.assets) { if(auth.assets[a].name === auth.courses[i].name) assets += `[${auth.assets[a].type}: ${auth.assets[a].content.substring(0,15)}...] `; }
-            hI += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td><td style="font-size:0.7rem; color:#aaa">${assets || 'لا يوجد'}</td></tr>`;
+        let hT = "";
+        for(let i in global) {
+            let content = (global[i].type.includes('exam') || global[i].type.includes('correction')) 
+                ? `<a href="${global[i].v1}" target="_blank" class="link-a">فتح الرابط</a>` 
+                : global[i].v1;
+            hT += `<tr><td>${global[i].name}</td><td>${global[i].type}</td><td>${content}</td></tr>`;
         }
-        document.getElementById('tbody_info').innerHTML = hI;
+        document.getElementById('tbody_tasks').innerHTML = hT;
     });
 </script>
 </body>
