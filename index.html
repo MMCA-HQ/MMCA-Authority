@@ -2,29 +2,68 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة المتقدمين</title>
+    <title>هيئة تنظيم الدورات - مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; text-align: center; }
-        .section { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 20px; border-radius: 8px; text-align: right; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #222; padding: 10px; text-align: center; }
-        th { color: var(--gold); }
+        .container { max-width: 900px; margin: auto; background: #14160f; border: 1px solid var(--army); padding: 25px; border-radius: 12px; }
+        .section { background: rgba(0,0,0,0.5); padding: 20px; margin-bottom: 25px; border-right: 5px solid var(--gold); text-align: right; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #080905; }
+        th, td { border: 1px solid #1a1d12; padding: 12px; text-align: center; }
+        th { color: var(--gold); background: #0d0e0a; }
+        input, select, button { padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; width: 100%; }
+        .btn-apply { background: var(--gold); color: #000; font-weight: bold; cursor: pointer; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-    <h1 style="color:var(--gold)">بوابة التدريب - مارفل</h1>
+    <div class="container">
+        <h1>هيئة تنظيم الدورات العسكرية - مارفل</h1>
 
-    <div class="section"><h3>| الشروط العامة</h3><div id="r_text"></div></div>
+        <div class="section">
+            <h3>| شروط الدورات</h3>
+            <div id="view_rules" style="white-space: pre-wrap; color: #ccc;">جاري التحميل...</div>
+        </div>
 
-    <div class="section"><h3>| مواعيد الدورات</h3><table id="c_table"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table></div>
+        <div class="section">
+            <h3>| مواعيد الدورات</h3>
+            <table id="view_courses">
+                <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-    <div class="section">
-        <h3>| لوحة النتائج (القبول والاجتياز)</h3>
-        <table id="res_table"><thead><tr><th>الاسم</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead><tbody></tbody></table>
+        <div class="section">
+            <h3>| استمارة الالتحاق</h3>
+            <form id="applyForm">
+                <input type="text" id="app_name" placeholder="الاسم كامل" required>
+                <input type="text" id="app_code" placeholder="الكود العسكري" required>
+                <input type="text" id="app_rank" placeholder="الرتبة" required>
+                <input type="number" id="app_age" placeholder="العمر" required>
+                <select id="app_course"><option value="">اختر الدورة</option></select>
+                <select id="app_period"><option value="الفترة الأولى">الفترة الأولى</option><option value="الفترة الثانية">الفترة الثانية</option></select>
+                <button type="submit" class="btn-apply">إرسال الطلب</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h3>| لوحة نتائج القبول المبدئي</h3>
+            <table id="view_results_accept">
+                <thead><tr><th>المتقدم</th><th>الدورة</th><th>الحالة</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>| لوحة نتائج الاجتياز النهائية</h3>
+            <table id="view_results_pass">
+                <thead><tr><th>المتقدم</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div style="margin-top:40px; color: var(--gold);">حقوق - دولة مارفل | هيئة تنظيم الدورات العسكرية</div>
     </div>
-
-    <button style="background:var(--gold); padding:15px; border:none; cursor:pointer; font-weight:bold;" onclick="location.href='apply.html'">تقديم استمارة التحاق</button>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -33,16 +72,46 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // إرسال الطلب
+    document.getElementById('applyForm').onsubmit = (e) => {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('app_name').value,
+            code: document.getElementById('app_code').value,
+            rank: document.getElementById('app_rank').value,
+            age: document.getElementById('app_age').value,
+            course: document.getElementById('app_course').value,
+            period: document.getElementById('app_period').value,
+            status: "قيد الانتظار",
+            pass: "لم تظهر بعد",
+            timestamp: Date.now()
+        };
+        db.ref('applications').push(data);
+        db.ref('logs').push({ msg: `📩 تقدم المتقدم ${data.name} لدورة ${data.course}`, time: new Date().toLocaleString('ar-SA') });
+        alert("تم إرسال طلبك بنجاح");
+        e.target.reset();
+    };
+
+    // التحديث التلقائي
     db.ref().on('value', snap => {
-        let d = snap.val() || {};
-        document.getElementById('r_text').innerText = (d.settings || {}).rules || "لا توجد شروط";
+        const val = snap.val() || {};
+        // عرض الشروط والمواعيد
+        document.getElementById('view_rules').innerText = (val.data || {}).rules || "لا توجد شروط حالياً";
         
-        let hC="", hR="";
-        for(let i in d.courses) hC += `<tr><td>${d.courses[i].name}</td><td>${d.courses[i].p1}</td><td>${d.courses[i].p2}</td></tr>`;
-        for(let i in d.applications) hR += `<tr><td>${d.applications[i].name}</td><td>${d.applications[i].course}</td><td>${d.applications[i].status || 'قيد المعالجة'}</td><td>${d.applications[i].pass || '---'}</td></tr>`;
-        
-        document.querySelector("#c_table tbody").innerHTML = hC;
-        document.querySelector("#res_table tbody").innerHTML = hR;
+        let hC="", hOpt="<option value=''>اختر الدورة</option>", hA="", hP="";
+        for(let i in val.courses) {
+            hC += `<tr><td>${val.courses[i].name}</td><td>${val.courses[i].p1}</td><td>${val.courses[i].p2}</td></tr>`;
+            hOpt += `<option value="${val.courses[i].name}">${val.courses[i].name}</option>`;
+        }
+        for(let i in val.applications) {
+            const app = val.applications[i];
+            hA += `<tr><td>${app.name}</td><td>${app.course}</td><td>${app.status}</td></tr>`;
+            if(app.pass !== "لم تظهر بعد") hP += `<tr><td>${app.name}</td><td>${app.course}</td><td>${app.pass}</td></tr>`;
+        }
+        document.querySelector("#view_courses tbody").innerHTML = hC;
+        document.getElementById('app_course').innerHTML = hOpt;
+        document.querySelector("#view_results_accept tbody").innerHTML = hA;
+        document.querySelector("#view_results_pass tbody").innerHTML = hP;
     });
 </script>
 </body>
