@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة المشرفين | دولة مارفل</title>
+    <title>لوحة الميدان - هيئة تنظيم الدورات</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
@@ -11,24 +11,24 @@
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
         .btn-login { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #mainContent { display: none; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 25px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 15px; font-size: 1.1rem; }
+        .panel { background: #14160f; border: 1px solid rgba(197, 160, 89, 0.2); padding: 20px; margin-bottom: 25px; border-radius: 8px; }
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; background: #080905; margin-bottom: 10px; }
-        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.8rem; }
+        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .link-a { color: #3498db; text-decoration: none; font-weight: bold; }
+        .survey-text { background: #1a1d12; padding: 15px; border-radius: 4px; color: #fff; font-size: 1rem; border-right: 4px solid var(--gold); line-height: 1.6; }
+        .btn-action { padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; color: #fff; margin: 2px; }
+        .footer { text-align: center; margin-top: 50px; padding: 20px; color: var(--gold); border-top: 1px solid var(--army); }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 style="color:var(--gold)">بوابة المشرفين</h2>
+        <h2 style="color:var(--gold)">بوابة دخول المشرفين</h2>
         <input type="text" id="militaryCode" placeholder="الكود العسكري" value="">
         <input type="password" id="admPass" placeholder="كلمة المرور">
-        <button class="btn-login" onclick="checkAuth()">دخول</button>
+        <button class="btn-login" onclick="checkAuth()">دخول النظام</button>
     </div>
 </div>
 
@@ -36,20 +36,43 @@
     <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة الميدان - مارفل</h1>
 
     <div class="panel">
-        <h2>| إدارة المتقدمين (ID + الرولات)</h2>
-        <table>
-            <thead><tr><th>المتقدم</th><th>ID</th><th>الرولات</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead>
-            <tbody id="tbody_apps"></tbody>
+        <h2>| مواعيد الدورات</h2>
+        <table id="table_courses">
+            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
+            <tbody></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>| المواعيد والروابط والمهام</h2>
-        <table>
-            <thead><tr><th>اسم الدورة</th><th>النوع</th><th>المحتوى / الرابط</th></tr></thead>
-            <tbody id="tbody_tasks"></tbody>
+        <h2>| بيانات الدخول (ID + الرولات)</h2>
+        <table id="table_discord">
+            <thead><tr><th>المتقدم</th><th>Discord ID</th><th>الرولات الحالية</th></tr></thead>
+            <tbody></tbody>
         </table>
     </div>
+
+    <div class="panel">
+        <h2>| إدارة قبول المتقدمين والنتائج</h2>
+        <table id="table_apps">
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>حالة القبول</th><th>حالة الاجتياز</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| روابط الاختبارات والتصحيح</h2>
+        <table id="table_links">
+            <thead><tr><th>الدورة</th><th>رابط الاختبار</th><th>رابط التصحيح</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| استبيانات الدورات (نصوص واضحة)</h2>
+        <div id="survey_container"></div>
+    </div>
+
+    <div class="footer">حقوق - دولة مارفل | هيئة تنظيم الدورات © 2026</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -60,46 +83,60 @@
     const db = firebase.database();
     let currentCode = "";
 
-    function pushLog(msg) { db.ref('system_logs').push({ msg: msg, time: new Date().toLocaleString('ar-SA') }); }
+    function pushLog(msg) { db.ref('system_logs').push({ msg, time: new Date().toLocaleString('ar-SA') }); }
 
     function checkAuth() {
-        const inputCode = document.getElementById('militaryCode').value || "غير معروف";
+        const inputCode = document.getElementById('militaryCode').value || "غير محدد";
         if (document.getElementById('admPass').value === "مشرف_2026") {
             currentCode = inputCode;
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            pushLog(`تم تسجيل الدخول باسم الكود العسكري ( ${currentCode} )`);
+            pushLog(`✅ دخول ناجح للمشرف: (${currentCode})`);
         } else {
-            pushLog(`⚠️ دخول فاشل للمشرفين! الكود: ( ${inputCode} )`);
-            alert("خطأ");
+            pushLog(`❌ دخول فاشل للمشرف! الكود المستخدم: (${inputCode})`);
+            alert("خطأ في البيانات");
         }
     }
 
     function updateAction(id, name, val, type) {
         let field = (type === 'stat') ? {status: val} : {pass: val};
         db.ref('applications/'+id).update(field);
-        pushLog(`[${currentCode}] قام بـ ${val} للمتقدم: ${name}`);
+        pushLog(`⚙️ [${currentCode}] عدل ${type==='stat'?'القبول':'النتيجة'} لـ ${name} إلى: ${val}`);
     }
 
     db.ref().on('value', (snap) => {
-        const root = snap.val() || {};
-        const apps = root.applications || {};
-        const global = (root.authority_data || {}).global || {};
-        
-        let hA = "";
-        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td>${apps[id].course}</td>
-        <td><button class="btn-acc" onclick="updateAction('${id}','${apps[id].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateAction('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td>
-        <td><button class="btn-acc" style="background:#3498db" onclick="updateAction('${id}','${apps[id].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#e67e22" onclick="updateAction('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
-        document.getElementById('tbody_apps').innerHTML = hA;
+        const data = snap.val() || {};
+        const apps = data.applications || {};
+        const auth = data.authority_data || {};
 
-        let hT = "";
-        for(let i in global) {
-            let content = (global[i].type.includes('exam') || global[i].type.includes('correction')) 
-                ? `<a href="${global[i].v1}" target="_blank" class="link-a">فتح الرابط</a>` 
-                : global[i].v1;
-            hT += `<tr><td>${global[i].name}</td><td>${global[i].type}</td><td>${content}</td></tr>`;
-        }
-        document.getElementById('tbody_tasks').innerHTML = hT;
+        // 1. المواعيد
+        let hC = "";
+        for(let i in auth.courses) hC += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
+        document.querySelector("#table_courses tbody").innerHTML = hC;
+
+        // 2. الدسكورد (ID + رولات)
+        let hD = "";
+        for(let id in apps) hD += `<tr><td>${apps[id].name}</td><td><code>${apps[id].discordID}</code></td><td>${apps[id].roles}</td></tr>`;
+        document.querySelector("#table_discord tbody").innerHTML = hD;
+
+        // 3. إدارة القبول
+        let hA = "";
+        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].course}</td>
+        <td><button class="btn-action" style="background:#27ae60" onclick="updateAction('${id}','${apps[id].name}','مقبول','stat')">قبول</button>
+            <button class="btn-action" style="background:#c0392b" onclick="updateAction('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td>
+        <td><button class="btn-action" style="background:#2980b9" onclick="updateAction('${id}','${apps[id].name}','ناجح','pass')">ناجح</button>
+            <button class="btn-action" style="background:#d35400" onclick="updateAction('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
+        document.querySelector("#table_apps tbody").innerHTML = hA;
+
+        // 4. الروابط
+        let hL = "";
+        for(let i in auth.assets) hL += `<tr><td>${auth.assets[i].name}</td><td><a href="${auth.assets[i].exam}" target="_blank" style="color:#3498db">فتح الاختبار</a></td><td><a href="${auth.assets[i].corr}" target="_blank" style="color:#3498db">فتح التصحيح</a></td></tr>`;
+        document.querySelector("#table_links tbody").innerHTML = hL;
+
+        // 5. الاستبيانات
+        let hS = "";
+        for(let i in auth.assets) hS += `<div style="margin-bottom:15px;"><strong>دورة ${auth.assets[i].name}:</strong><div class="survey-text">${auth.assets[i].survey}</div></div>`;
+        document.getElementById('survey_container').innerHTML = hS;
     });
 </script>
 </body>
