@@ -11,6 +11,12 @@
         table { width: 100%; border-collapse: collapse; background: #000; margin-bottom: 10px; }
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
+        
+        /* تنسيق هوية ديسكورد */
+        .discord-user { display: flex; align-items: center; gap: 10px; justify-content: center; }
+        .discord-user img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--gold); }
+        .discord-id { font-size: 0.75rem; color: #888; font-family: monospace; display: block; }
+
         .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .btn-accept { background: #2ecc71; color: #000; }
         .btn-reject { background: #e74c3c; color: #fff; }
@@ -31,9 +37,9 @@
     </div>
 
     <div class="panel">
-        <h2>| إدارة طلبات القبول</h2>
+        <h2>| إدارة طلبات القبول (تحقق الديسكورد)</h2>
         <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>الإجراء</th></tr></thead>
+            <thead><tr><th>المتقدم (Discord)</th><th>الأيدي (Discord ID)</th><th>الكود</th><th>الدورة</th><th>الإجراء</th></tr></thead>
             <tbody id="admAcc"></tbody>
         </table>
     </div>
@@ -80,17 +86,40 @@
             const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
             
             let hSched="", hAcc="", hPass="", hEx="", hCo="", hSur="";
+            
+            // المواعيد
             for(let i in auth.courses) hSched += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
             document.getElementById('schedBody').innerHTML = hSched;
 
+            // المتقدمين (تحديث ليشمل الديسكورد)
             for(let id in apps) {
                 let a = apps[id];
-                hAcc += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button><button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button></td></tr>`;
-                if(a.status === 'مقبول') hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" style="background:#3498db" onclick="setPass('${id}','ناجح')">ناجح</button><button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button></td></tr>`;
+                let avatar = a.avatar || 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png';
+                
+                hAcc += `<tr>
+                    <td>
+                        <div class="discord-user">
+                            <img src="${avatar}">
+                            <span>${a.name}</span>
+                        </div>
+                    </td>
+                    <td><span class="discord-id">${a.discord_id || '---'}</span></td>
+                    <td>${a.code}</td>
+                    <td>${a.course}</td>
+                    <td>
+                        <button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button>
+                        <button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button>
+                    </td>
+                </tr>`;
+
+                if(a.status === 'مقبول') {
+                    hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" style="background:#3498db" onclick="setPass('${id}','ناجح')">ناجح</button><button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button></td></tr>`;
+                }
             }
             document.getElementById('admAcc').innerHTML = hAcc;
             document.getElementById('admPass').innerHTML = hPass;
 
+            // الروابط
             for(let i in auth.exams) hEx += `<a href="${auth.exams[i].url}" class="link-btn" target="_blank">${auth.exams[i].course}</a>`;
             document.getElementById('examsLinks').innerHTML = hEx;
 
