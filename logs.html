@@ -9,21 +9,43 @@
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; --card: #14160f; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
         .panel { background: var(--card); border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 10px; }
-        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 15px; font-size: 1.2rem; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 15px; font-size: 1.2rem; margin-bottom: 20px; }
         .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        input, textarea { background: #000; color: #fff; border: 1px solid #222; padding: 12px; border-radius: 5px; flex: 1; }
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        input, textarea { background: #000; color: #fff; border: 1px solid #222; padding: 12px; border-radius: 5px; flex: 1; min-width: 150px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-main { background: var(--gold); color: #000; }
         .btn-edit { background: #3498db; color: #fff; margin-left: 5px; }
         .btn-del { background: #e74c3c; color: #fff; }
         table { width: 100%; border-collapse: collapse; background: #000; margin-top: 10px; }
-        th, td { border: 1px solid #1a1d12; padding: 15px; text-align: center; }
-        th { color: var(--gold); background: #0d0e0a; }
+        th, td { border: 1px solid #1a1d12; padding: 12px; text-align: center; }
+        th { color: var(--gold); background: #0d0e0a; font-size: 0.9rem; }
+        .footer { text-align: center; padding: 30px; color: var(--gold); border-top: 1px solid var(--army); margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align:center; color:var(--gold);">إدارة النظام - دولة مارفل</h1>
+    <h1 style="text-align:center; color:var(--gold);">لوحة التحكم الكاملة - دولة مارفل</h1>
+
+    <div class="panel">
+        <h2>| تعديل الشروط والضوابط</h2>
+        <textarea id="rulesText" placeholder="اكتب الشروط العامة هنا..." style="width: 100%; height: 80px; box-sizing: border-box;"></textarea>
+        <button class="btn btn-main" style="width:100%; margin-top:10px;" onclick="saveRules()">حفظ الشروط</button>
+    </div>
+
+    <div class="panel">
+        <h2>| إدارة الدورات والمواعيد</h2>
+        <div class="controls">
+            <input type="hidden" id="edit_course_id">
+            <input type="text" id="c_name" placeholder="اسم الدورة">
+            <input type="text" id="c_p1" placeholder="الفترة الأولى">
+            <input type="text" id="c_p2" placeholder="الفترة الثانية">
+            <button class="btn btn-main" id="btn_c_save" onclick="addOrUpdateCourse()">إضافة دورة</button>
+        </div>
+        <table>
+            <thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>التحكم</th></tr></thead>
+            <tbody id="t_courses"></tbody>
+        </table>
+    </div>
 
     <div class="panel">
         <h2>| روابط الاختبارات</h2>
@@ -53,58 +75,117 @@
         </table>
     </div>
 
+    <div class="panel">
+        <h2>| استبيانات الدورات</h2>
+        <div class="controls">
+            <input type="hidden" id="edit_surv_id">
+            <input type="text" id="s_name" placeholder="اسم الدورة">
+            <textarea id="s_text" placeholder="نص الاستبيان"></textarea>
+            <button class="btn btn-main" id="btn_s_save" onclick="addOrUpdate('surveys', 's_name', 's_text', 'edit_surv_id', 'btn_s_save')">حفظ نص</button>
+        </div>
+        <table>
+            <thead><tr><th>الدورة</th><th>المحتوى</th><th>التحكم</th></tr></thead>
+            <tbody id="t_surveys"></tbody>
+        </table>
+    </div>
+
+    <div class="panel" style="border-color: #e74c3c;">
+        <h2>| إدارة شؤون المتقدمين</h2>
+        <table id="t_apps">
+            <thead><tr><th>الاسم</th><th>الكود</th><th>إجراء</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="footer">حقوق - دولة مارفل</div>
+
     <script>
         const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function addOrUpdate(path, nameId, urlId, hiddenId, btnId) {
-            const id = document.getElementById(hiddenId).value;
-            const data = { 
-                course: document.getElementById(nameId).value, 
-                url: document.getElementById(urlId).value 
-            };
-            if(!data.course || !data.url) return alert("أكمل البيانات");
+        // حفظ الشروط
+        function saveRules() {
+            db.ref('authority_data/rules').set(document.getElementById('rulesText').value).then(() => alert("تم الحفظ"));
+        }
 
+        // إضافة وتعديل الدورات
+        function addOrUpdateCourse() {
+            const id = document.getElementById('edit_course_id').value;
+            const data = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
+            if(!data.name) return alert("ادخل الاسم");
+            if(id) db.ref('authority_data/courses/' + id).update(data);
+            else db.ref('authority_data/courses').push(data);
+            reset('edit_course_id', 'c_name', 'c_p1', 'c_p2', 'btn_c_save', 'إضافة دورة');
+        }
+
+        // إضافة وتعديل الروابط والاستبيانات
+        function addOrUpdate(path, nameId, valId, hiddenId, btnId) {
+            const id = document.getElementById(hiddenId).value;
+            const data = { course: document.getElementById(nameId).value, url: document.getElementById(valId).value };
+            if(!data.course || !data.url) return alert("أكمل البيانات");
             if(id) db.ref('authority_data/' + path + '/' + id).update(data);
             else db.ref('authority_data/' + path).push(data);
-
-            document.getElementById(hiddenId).value = "";
-            document.getElementById(nameId).value = "";
-            document.getElementById(urlId).value = "";
-            document.getElementById(btnId).innerText = "حفظ جديد";
+            reset(hiddenId, nameId, valId, null, btnId, 'حفظ جديد');
         }
 
-        function prepareEdit(id, n, u, hiddenId, nameId, urlId, btnId) {
-            document.getElementById(hiddenId).value = id;
-            document.getElementById(nameId).value = n;
-            document.getElementById(urlId).value = u;
-            document.getElementById(btnId).innerText = "تحديث التعديل";
+        function reset(h, n, v, v2, b, txt) {
+            document.getElementById(h).value = ""; document.getElementById(n).value = ""; document.getElementById(v).value = "";
+            if(v2) document.getElementById(v2).value = "";
+            document.getElementById(b).innerText = txt;
         }
 
+        function prepareEditCourse(id, n, p1, p2) {
+            document.getElementById('edit_course_id').value = id;
+            document.getElementById('c_name').value = n; document.getElementById('c_p1').value = p1; document.getElementById('c_p2').value = p2;
+            document.getElementById('btn_c_save').innerText = "تحديث التعديل";
+        }
+
+        function prepareEditItem(id, n, u, h, ni, vi, b) {
+            document.getElementById(h).value = id;
+            document.getElementById(ni).value = n; document.getElementById(vi).value = u;
+            document.getElementById(b).innerText = "تحديث التعديل";
+        }
+
+        // مزامنة البيانات
         db.ref('authority_data').on('value', snap => {
             const auth = snap.val() || {};
-            const paths = { exams: 't_exams', correction: 't_correction' };
+            document.getElementById('rulesText').value = auth.rules || "";
+
+            // تحديث جداول الروابط
+            const map = { exams: 't_exams', correction: 't_correction', surveys: 't_surveys' };
             const meta = { 
                 exams: ['edit_exam_id','e_name','e_url','btn_e_save'], 
-                correction: ['edit_corr_id','co_name','co_url','btn_co_save'] 
+                correction: ['edit_corr_id','co_name','co_url','btn_co_save'],
+                surveys: ['edit_surv_id','s_name','s_text','btn_s_save']
             };
 
-            for(let p in paths) {
+            for(let p in map) {
                 let html = "";
                 for(let i in auth[p]) {
-                    let item = auth[p][i];
-                    html += `<tr>
-                        <td>${item.course}</td>
-                        <td style="color:#888; font-size:0.8rem;">${item.url}</td>
-                        <td>
-                            <button class="btn btn-edit" onclick="prepareEdit('${i}','${item.course}','${item.url}','${meta[p][0]}','${meta[p][1]}','${meta[p][2]}','${meta[p][3]}')">تعديل</button>
-                            <button class="btn btn-del" onclick="db.ref('authority_data/${p}/${i}').remove()">حذف</button>
-                        </td>
-                    </tr>`;
+                    let it = auth[p][i];
+                    html += `<tr><td>${it.course}</td><td>${it.url}</td><td>
+                        <button class="btn btn-edit" onclick="prepareEditItem('${i}','${it.course}','${it.url}','${meta[p][0]}','${meta[p][1]}','${meta[p][2]}','${meta[p][3]}')">تعديل</button>
+                        <button class="btn btn-del" onclick="db.ref('authority_data/${p}/${i}').remove()">حذف</button></td></tr>`;
                 }
-                document.getElementById(paths[p]).innerHTML = html;
+                document.getElementById(map[p]).innerHTML = html;
             }
+
+            // تحديث الدورات
+            let hC = "";
+            for(let i in auth.courses) {
+                let c = auth.courses[i];
+                hC += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td><td>
+                    <button class="btn btn-edit" onclick="prepareEditCourse('${i}','${c.name}','${c.p1}','${c.p2}')">تعديل</button>
+                    <button class="btn btn-del" onclick="db.ref('authority_data/courses/${i}').remove()">حذف</button></td></tr>`;
+            }
+            document.getElementById('t_courses').innerHTML = hC;
+        });
+
+        db.ref('applications').on('value', snap => {
+            let h = ""; const apps = snap.val() || {};
+            for(let i in apps) h += `<tr><td>${apps[i].name}</td><td>${apps[i].code}</td><td><button class="btn btn-del" onclick="db.ref('applications/${i}').remove()">حذف</button></td></tr>`;
+            document.getElementById('t_apps').querySelector('tbody').innerHTML = h;
         });
     </script>
 </body>
