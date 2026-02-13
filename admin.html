@@ -14,7 +14,9 @@
         .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .btn-accept { background: #2ecc71; color: #000; }
         .btn-reject { background: #e74c3c; color: #fff; }
-        .footer { margin-top: 50px; text-align: center; color: var(--gold); }
+        .link-btn { background: var(--gold); color: #000; padding: 10px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 5px; font-weight: bold; }
+        .survey-text { background: #000; border: 1px dashed var(--gold); padding: 10px; margin: 5px; color: #ddd; }
+        .footer { margin-top: 50px; text-align: center; border-top: 1px solid var(--army); padding: 20px; }
     </style>
 </head>
 <body>
@@ -22,16 +24,16 @@
 
     <div class="panel">
         <h2>| مواعيد الدورات العامة</h2>
-        <table id="mainSched">
-            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
-            <tbody></tbody>
+        <table>
+            <thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead>
+            <tbody id="schedBody"></tbody>
         </table>
     </div>
 
     <div class="panel">
         <h2>| إدارة طلبات القبول</h2>
         <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القرار والحالة</th></tr></thead>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>الإجراء</th></tr></thead>
             <tbody id="admAcc"></tbody>
         </table>
     </div>
@@ -42,6 +44,21 @@
             <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
             <tbody id="admPass"></tbody>
         </table>
+    </div>
+
+    <div class="panel">
+        <h2>| روابط الاختبارات</h2>
+        <div id="examsLinks"></div>
+    </div>
+
+    <div class="panel">
+        <h2>| روابط التصحيح</h2>
+        <div id="corrLinks"></div>
+    </div>
+
+    <div class="panel">
+        <h2>| استبيانات الدورة (نصوص)</h2>
+        <div id="surveyTexts"></div>
     </div>
 
     <div class="footer"><p>حقوق - دولة مارفل</p></div>
@@ -59,29 +76,29 @@
         function setStatus(id, val) { db.ref('applications/' + id).update({ status: val }); }
         function setPass(id, val) { db.ref('applications/' + id).update({ pass: val }); }
 
-        db.ref().on('value', (snap) => {
-            const data = snap.val() || {}; const apps = data.applications || {}; const auth = data.authority_data || {};
-            let hAcc = "", hPass = "", hSched = "";
+        db.ref().on('value', snap => {
+            const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
+            
+            let hSched="", hAcc="", hPass="", hEx="", hCo="", hSur="";
+            for(let i in auth.courses) hSched += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
+            document.getElementById('schedBody').innerHTML = hSched;
+
             for(let id in apps) {
                 let a = apps[id];
-                hAcc += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                    <button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button>
-                    <button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button>
-                </td></tr>`;
-                if(a.status === 'مقبول') {
-                    hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>
-                        <button class="btn-action btn-accept" onclick="setPass('${id}','ناجح')">ناجح</button>
-                        <button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button>
-                    </td></tr>`;
-                }
-            }
-            for(let i in auth.courses) {
-                let c = auth.courses[i];
-                hSched += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
+                hAcc += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button><button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button></td></tr>`;
+                if(a.status === 'مقبول') hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" style="background:#3498db" onclick="setPass('${id}','ناجح')">ناجح</button><button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button></td></tr>`;
             }
             document.getElementById('admAcc').innerHTML = hAcc;
             document.getElementById('admPass').innerHTML = hPass;
-            document.querySelector("#mainSched tbody").innerHTML = hSched;
+
+            for(let i in auth.exams) hEx += `<a href="${auth.exams[i].url}" class="link-btn" target="_blank">${auth.exams[i].course}</a>`;
+            document.getElementById('examsLinks').innerHTML = hEx;
+
+            for(let i in auth.correction) hCo += `<a href="${auth.correction[i].url}" class="link-btn" style="background:#3498db" target="_blank">${auth.correction[i].course}</a>`;
+            document.getElementById('corrLinks').innerHTML = hCo;
+
+            for(let i in auth.surveys) hSur += `<div class="survey-text"><b>${auth.surveys[i].course}:</b><p>${auth.surveys[i].url}</p></div>`;
+            document.getElementById('surveyTexts').innerHTML = hSur;
         });
     </script>
 </body>
