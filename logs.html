@@ -13,14 +13,13 @@
         #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
         h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
-        .admin-controls { display: flex; gap: 10px; margin-bottom: 20px; flex-direction: row-reverse; }
-        input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 4px; flex: 1; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: #080905; }
+        .admin-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        input, textarea, select { background: #000; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 4px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: #080905; margin-top: 10px; }
         th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        #logBox { max-height: 300px; overflow-y: auto; background: #000; padding: 15px; border: 1px solid #222; border-radius: 4px; font-family: monospace; }
-        .log-entry { font-size: 0.85rem; padding: 5px 0; border-bottom: 1px solid #111; color: #00ff00; text-align: right; }
+        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+        #logBox { max-height: 250px; overflow-y: auto; background: #000; padding: 15px; border: 1px solid #222; color: #00ff00; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -35,43 +34,44 @@
 </div>
 
 <div id="mainContent">
-    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة التحكم المركزية - مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة القيادة - مارفل</h1>
 
     <div class="panel">
-        <h2>| الشروط والضوابط العامة</h2>
-        <textarea id="rulesText" style="width: 100%; height: 80px;"></textarea>
+        <h2>| الشروط العامة</h2>
+        <textarea id="rulesText" style="width: 100%; height: 60px;"></textarea>
         <button class="btn-main" style="width: 100%; margin-top:10px" onclick="saveRules()">تحديث الشروط</button>
     </div>
 
     <div class="panel">
-        <h2>| إدارة الدورات والمواعيد والروابط</h2>
+        <h2>| إدارة البيانات (مواعيد / روابط / استبيانات)</h2>
         <div class="admin-controls">
-            <button class="btn-main" onclick="saveData('courses')">إضافة دورة</button>
-            <input type="text" id="c_p2" placeholder="الفترة 2">
-            <input type="text" id="c_p1" placeholder="الفترة 1">
-            <input type="text" id="c_name" placeholder="اسم الدورة">
-        </div>
-        <div class="admin-controls">
-            <button class="btn-main" onclick="saveAsset()">إضافة (رابط/استبيان)</button>
-            <textarea id="asset_text" placeholder="الرابط أو نص الاستبيان"></textarea>
-            <select id="asset_type" style="background:#000; color:#fff; padding:10px;">
-                <option value="رابط">رابط</option>
-                <option value="استبيان">استبيان</option>
+            <input type="text" id="data_name" placeholder="اسم الدورة">
+            <select id="data_type">
+                <option value="course">موعد دورة</option>
+                <option value="exam">رابط اختبار</option>
+                <option value="correction">رابط تصحيح</option>
+                <option value="survey">نص استبيان</option>
             </select>
-            <input type="text" id="asset_name" placeholder="اسم الدورة المطابق">
+            <input type="text" id="val1" placeholder="القيمة 1 (موعد ف1 / الرابط / النص)">
+            <input type="text" id="val2" placeholder="القيمة 2 (موعد ف2 - اختياري)">
+            <button class="btn-main" onclick="saveGlobalData()">إضافة للوحة</button>
         </div>
+        <table>
+            <thead><tr><th>الدورة</th><th>النوع</th><th>المحتوى</th><th>حذف</th></tr></thead>
+            <tbody id="tbody_global"></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>| إدارة المتقدمين (ID + الرولات)</h2>
+        <h2>| إدارة المتقدمين (Discord ID + Roles)</h2>
         <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th><th>تصفير القبول</th><th>تصفير النتيجة</th><th>طرد</th></tr></thead>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th><th>تصفير</th><th>طرد</th></tr></thead>
             <tbody id="tbody_manage_apps"></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>| سجل مراقبة النظام (Logs)</h2>
+        <h2>| السجل المركزي (Logs)</h2>
         <div id="logBox"></div>
     </div>
 </div>
@@ -86,58 +86,40 @@
     function pushLog(msg) { db.ref('system_logs').push({ msg: msg, time: new Date().toLocaleString('ar-SA') }); }
 
     function checkAuth() {
-        const pass = document.getElementById('realPass').value;
-        const code = document.getElementById('fakeCode').value || "غير محدد";
-        if (pass === "رئيس_2026") {
+        if (document.getElementById('realPass').value === "رئيس_2026") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             pushLog(`تم تسجيل الدخول باسم ( الرئيس )`);
         } else {
-            pushLog(`⚠️ محاولة دخول فاشلة للرئيس! الكود المستخدم: ( ${code} )`);
-            alert("خطأ في صلاحيات الوصول");
+            pushLog(`⚠️ محاولة دخول فاشلة للرئيس! الكود: (${document.getElementById('fakeCode').value || 'فارغ'})`);
+            alert("خطأ");
         }
     }
 
-    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value); pushLog("الرئيس: قام بتحديث الشروط"); }
-    
-    function saveData(path) {
-        let obj = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
-        db.ref('authority_data/'+path).push(obj);
-        pushLog(`الرئيس: أضاف دورة جديدة (${obj.name})`);
-    }
+    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value); pushLog("الرئيس: حدث الشروط"); }
 
-    function saveAsset() {
-        let obj = { name: document.getElementById('asset_name').value, type: document.getElementById('asset_type').value, content: document.getElementById('asset_text').value };
-        db.ref('authority_data/assets').push(obj);
+    function saveGlobalData() {
+        const obj = { name: document.getElementById('data_name').value, type: document.getElementById('data_type').value, v1: document.getElementById('val1').value, v2: document.getElementById('val2').value };
+        db.ref('authority_data/global').push(obj);
         pushLog(`الرئيس: أضاف ${obj.type} لدورة ${obj.name}`);
     }
-
-    function resetStat(id, n, type) {
-        let field = (type === 'stat') ? {status:'تحت المراجعة'} : {pass:'بانتظار الدورة'};
-        db.ref('applications/'+id).update(field);
-        pushLog(`الرئيس: صفر ${type === 'stat' ? 'حالة قبول' : 'نتيجة'} المتقدم: ${n}`);
-    }
-
-    function deleteApp(id, n) { if(confirm("حذف المتقدم "+n+" نهائياً؟")) { db.ref('applications/'+id).remove(); pushLog(`الرئيس: حذف المتقدم ${n} من النظام`); } }
 
     db.ref().on('value', (snap) => {
         const root = snap.val() || {};
         const apps = root.applications || {};
-        const logs = root.system_logs || {};
+        const global = (root.authority_data || {}).global || {};
         document.getElementById('rulesText').value = (root.authority_data || {}).rules || "";
         
+        let hG = "";
+        for(let i in global) hG += `<tr><td>${global[i].name}</td><td>${global[i].type}</td><td>${global[i].v1.substring(0,20)}...</td><td><button class="btn-del" onclick="db.ref('authority_data/global/${i}').remove()">X</button></td></tr>`;
+        document.getElementById('tbody_global').innerHTML = hG;
+
         let hAp = "";
-        for(let id in apps) {
-            hAp += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td>
-            <td><button class="btn-del" style="background:#f39c12" onclick="resetStat('${id}','${apps[id].name}','stat')">حذف</button></td>
-            <td><button class="btn-del" style="background:#e67e22" onclick="resetStat('${id}','${apps[id].name}','pass')">حذف</button></td>
-            <td><button class="btn-del" onclick="deleteApp('${id}','${apps[id].name}')">طرد</button></td></tr>`;
-        }
+        for(let id in apps) hAp += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td><button class="btn-del" style="background:#f39c12" onclick="db.ref('applications/${id}').update({status:'تحت المراجعة',pass:'بانتظار الدورة'})">تصفير</button></td><td><button class="btn-del" onclick="db.ref('applications/${id}').remove()">طرد</button></td></tr>`;
         document.getElementById('tbody_manage_apps').innerHTML = hAp;
 
         let hL = "";
-        let logArr = Object.values(logs).reverse().slice(0, 50);
-        logArr.forEach(l => hL += `<div class="log-entry">[${l.time}] ${l.msg}</div>`);
+        Object.values(root.system_logs || {}).reverse().slice(0, 50).forEach(l => hL += `<div>[${l.time}] ${l.msg}</div>`);
         document.getElementById('logBox').innerHTML = hL;
     });
 </script>
