@@ -2,135 +2,39 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة المتقدمين | دولة مارفل</title>
+    <title>بوابة التقديم - مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; line-height: 1.6; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 5px; }
-        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; font-size: 1.2rem; }
-        label { display: block; margin-top: 10px; color: var(--gold); font-size: 0.9rem; }
-        input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 5px 0 15px 0; border-radius: 4px; box-sizing: border-box; font-family: Tahoma; }
-        .btn-submit { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; font-size: 1.1rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
-        th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
-        th { background: #1a1d12; color: var(--gold); }
-        .status-accepted { color: #2ecc71; font-weight: bold; }
-        .status-pending { color: #f1c40f; }
-        .status-rejected { color: #e74c3c; }
-        .pass-success { color: #2ecc71; font-weight: bold; border: 1px solid #2ecc71; padding: 2px 8px; border-radius: 3px; }
-        .pass-failed { color: #e74c3c; font-weight: bold; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 3px; }
-        .footer { margin-top: 50px; padding: 20px; border-top: 1px solid var(--army); text-align: center; }
-        .footer p { margin: 5px 0; color: var(--gold); font-weight: bold; }
-        .footer .sub-text { color: #666; font-size: 0.85rem; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; text-align: center; }
+        .box { max-width: 800px; margin: auto; background: #14160f; border: 1px solid var(--army); padding: 20px; border-radius: 10px; }
+        .section { background: rgba(0,0,0,0.5); padding: 15px; margin: 15px 0; border-right: 4px solid var(--gold); text-align: right; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #222; padding: 10px; text-align: center; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <h1 style="text-align: center; color: var(--gold);">هيئة تنظيم الدورات العسكرية - دولة مارفل</h1>
-
-    <div class="panel">
-        <h2>| شروط الدورات</h2>
-        <div id="rulesDisplay" style="white-space: pre-wrap; color: #ddd;">جاري التحميل...</div>
+    <div class="box">
+        <h1 style="color:var(--gold)">هيئة تنظيم الدورات - دولة مارفل</h1>
+        <div class="section"><h3>| الشروط العامة</h3><div id="r_text">جاري التحميل...</div></div>
+        <div class="section"><h3>| مواعيد الدورات</h3><table id="c_table"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table></div>
+        <button class="btn" onclick="location.href='apply.html'">تقديم الآن</button>
     </div>
 
-    <div class="panel">
-        <h2>| مواعيد الدورات</h2>
-        <table>
-            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
-            <tbody id="coursesTable"></tbody>
-        </table>
-    </div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    <div class="panel" style="border: 2px solid var(--gold);">
-        <h2>| استمارة طلب الالتحاق</h2>
-        <label>الاسم كامل:</label>
-        <input type="text" id="regName" placeholder="الاسم كامل">
-        <label>الكود العسكري:</label>
-        <input type="text" id="regCode" placeholder="أدخل الكود الخاص بك">
-        <label>العمر:</label>
-        <input type="number" id="regAge" placeholder="أدخل عمرك">
-        <label>الدورة المطلوبة:</label>
-        <select id="regCourse" onchange="updatePeriods()"><option value="">-- اختر الدورة --</option></select>
-        <label>اختر الفترة:</label>
-        <select id="regPeriod"><option value="">-- يرجى اختيار الدورة أولاً --</option></select>
-        <button class="btn-submit" onclick="submitApplication()">إرسال الطلب الرسمي</button>
-    </div>
-
-    <div class="panel">
-        <h2>أولاً: نتائج القبول المبدئي</h2>
-        <table>
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الفترة</th><th>الحالة</th></tr></thead>
-            <tbody id="accBody"></tbody>
-        </table>
-    </div>
-
-    <div class="panel" style="border-color: var(--gold);">
-        <h2>ثانياً:نتائج اجتياز الدورات</h2>
-        <table>
-            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة النهائية</th></tr></thead>
-            <tbody id="passBody"></tbody>
-        </table>
-    </div>
-
-    <div class="footer">
-        <p>حقوق - دولة مارفل</p>
-        <p class="sub-text">هيئة تنظيم الدورات</p>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        function updatePeriods() {
-            const courseName = document.getElementById('regCourse').value;
-            db.ref('authority_data/courses').once('value', snap => {
-                const courses = snap.val();
-                let options = '<option value="">-- اختر الفترة --</option>';
-                for(let id in courses) {
-                    if(courses[id].name === courseName) {
-                        if(courses[id].p1) options += `<option value="${courses[id].p1}">${courses[id].p1}</option>`;
-                        if(courses[id].p2) options += `<option value="${courses[id].p2}">${courses[id].p2}</option>`;
-                    }
-                }
-                document.getElementById('regPeriod').innerHTML = options;
-            });
-        }
-
-        function submitApplication() {
-            const fields = { name: document.getElementById('regName').value, code: document.getElementById('regCode').value, age: document.getElementById('regAge').value, course: document.getElementById('regCourse').value, period: document.getElementById('regPeriod').value };
-            if(!fields.name || !fields.code || !fields.course || !fields.period) return alert("أكمل البيانات");
-            db.ref('applications').push({...fields, status: 'تحت المراجعة', pass: 'بانتظار الدورة'}).then(() => { alert("تم الإرسال"); location.reload(); });
-        }
-
-        db.ref().on('value', (snap) => {
-            const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
-            document.getElementById('rulesDisplay').innerText = auth.rules || "لا توجد شروط";
-            let cHtml = ""; let selHtml = '<option value="">-- اختر الدورة --</option>';
-            for(let id in auth.courses) {
-                const c = auth.courses[id];
-                cHtml += `<tr><td>${c.name}</td><td>${c.p1}</td><td>${c.p2}</td></tr>`;
-                selHtml += `<option value="${c.name}">${c.name}</option>`;
-            }
-            document.getElementById('coursesTable').innerHTML = cHtml;
-            document.getElementById('regCourse').innerHTML = selHtml;
-            let accHtml = ""; let passHtml = "";
-            for(let id in apps) {
-                const a = apps[id];
-                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${a.period || '-'}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
-                if(a.status === 'مقبول') {
-                    let pClass = "pass-waiting"; let pText = a.pass || "قيد الانتظار";
-                    if(a.pass === 'ناجح' || a.pass === 'تم الاجتياز') { pClass = "pass-success"; pText = "اجتياز ✓"; }
-                    if(a.pass === 'راسب' || a.pass === 'عدم اجتياز') { pClass = "pass-failed"; pText = "عدم اجتياز ✗"; }
-                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><span class="${pClass}">${pText}</span></td></tr>`;
-                }
-            }
-            document.getElementById('accBody').innerHTML = accHtml;
-            document.getElementById('passBody').innerHTML = passHtml;
-        });
-    </script>
+    db.ref('authority').on('value', snap => {
+        const v = snap.val() || {};
+        document.getElementById('r_text').innerText = v.rules || "لا توجد شروط حالياً";
+        let h="";
+        for(let i in v.courses) h+=`<tr><td>${v.courses[i].name}</td><td>${v.courses[i].p1}</td><td>${v.courses[i].p2}</td></tr>`;
+        document.querySelector("#c_table tbody").innerHTML = h;
+    });
+</script>
 </body>
 </html>
-
-
