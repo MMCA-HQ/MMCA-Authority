@@ -23,7 +23,7 @@
             font-family: 'Segoe UI', Tahoma, sans-serif;
             margin: 0;
             padding: 20px;
-            display: none; /* حماية بكلمة مرور */
+            display: none; /* مخفي حتى إدخال كلمة المرور */
         }
 
         .container { max-width: 1100px; margin: 0 auto; }
@@ -71,7 +71,7 @@
             flex: 1;
         }
 
-        .btn-add {
+        .btn-gold {
             background: var(--gold);
             color: #000;
             border: none;
@@ -79,15 +79,14 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.9rem;
-            min-width: 100px;
+            min-width: 120px;
         }
 
-        .btn-edit { background: var(--blue); color: #fff; padding: 8px 20px; border-radius: 5px; border: none; cursor: pointer; margin-left: 10px; }
-        .btn-del { background: var(--error); color: #fff; padding: 8px 20px; border-radius: 5px; border: none; cursor: pointer; }
+        .btn-edit { background: var(--blue); color: #fff; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; margin-left: 5px; }
+        .btn-del { background: var(--error); color: #fff; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { color: var(--gold); padding: 15px; border-bottom: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; direction: rtl; }
+        th { color: var(--gold); padding: 15px; border-bottom: 1px solid var(--border); text-align: center; }
         td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .section-red { border: 1px solid var(--error); }
@@ -96,12 +95,12 @@
 <body>
 
 <div class="container">
-    <h1 style="text-align: center; color: var(--gold); margin-bottom: 50px;">لوحة القيادة العليا - دولة مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 50px;">نظام التحكم الأعلى | دولة مارفل</h1>
 
     <div class="panel">
         <h2>إدارة الشروط والضوابط</h2>
-        <textarea id="rulesText" placeholder="اكتب الشروط العامة هنا..."></textarea>
-        <button class="btn-add" style="width: 100%; height: 50px; margin-top:10px;" onclick="saveRules()">تحديث الشروط</button>
+        <textarea id="rulesText" style="width: 100%; height: 100px; margin-bottom: 15px;" placeholder="اكتب الشروط هنا..."></textarea>
+        <button class="btn-gold" style="width: 100%; height: 50px;" onclick="saveRules()">تحديث الشروط</button>
     </div>
 
     <div class="panel">
@@ -111,7 +110,7 @@
             <input type="text" id="c_p1" placeholder="الفترة 1">
             <input type="text" id="c_p2" placeholder="الفترة 2">
             <input type="hidden" id="edit_c_id">
-            <button class="btn-add" id="btn_c" onclick="addOrUpdateCourse()">حفظ جديد</button>
+            <button class="btn-gold" id="btn_c" onclick="addOrUpdateCourse()">حفظ جديد</button>
         </div>
         <table>
             <thead><tr><th>التحكم</th><th>فترة 2</th><th>فترة 1</th><th>الدورة</th></tr></thead>
@@ -125,26 +124,20 @@
             <input type="text" id="e_name" placeholder="اسم الدورة">
             <input type="text" id="e_url" placeholder="رابط الاختبار">
             <input type="hidden" id="edit_e_id">
-            <button class="btn-add" id="btn_e" onclick="addOrUpdate('exams', 'e_name', 'e_url', 'edit_e_id', 'btn_e')">حفظ جديد</button>
+            <button class="btn-gold" id="btn_e" onclick="addItem('exams', 'e_name', 'e_url', 'edit_e_id', 'btn_e')">حفظ جديد</button>
         </div>
-        <table>
-            <thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead>
-            <tbody id="t_exams"></tbody>
-        </table>
+        <table><thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead><tbody id="t_exams"></tbody></table>
     </div>
 
     <div class="panel">
         <h2>روابط التصحيح</h2>
         <div class="controls">
             <input type="text" id="co_name" placeholder="اسم الدورة">
-            <input type="text" id="co_url" placeholder="رابط نموذج التصحيح">
+            <input type="text" id="co_url" placeholder="رابط التصحيح">
             <input type="hidden" id="edit_co_id">
-            <button class="btn-add" id="btn_co" onclick="addOrUpdate('correction', 'co_name', 'co_url', 'edit_co_id', 'btn_co')">حفظ جديد</button>
+            <button class="btn-gold" id="btn_co" onclick="addItem('correction', 'co_name', 'co_url', 'edit_co_id', 'btn_co')">حفظ جديد</button>
         </div>
-        <table>
-            <thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead>
-            <tbody id="t_correction"></tbody>
-        </table>
+        <table><thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead><tbody id="t_correction"></tbody></table>
     </div>
 
     <div class="panel">
@@ -153,12 +146,9 @@
             <input type="text" id="s_name" placeholder="اسم الدورة">
             <input type="text" id="s_url" placeholder="رابط الاستبيان">
             <input type="hidden" id="edit_s_id">
-            <button class="btn-add" id="btn_s" onclick="addOrUpdate('surveys', 's_name', 's_url', 'edit_s_id', 'btn_s')">حفظ جديد</button>
+            <button class="btn-gold" id="btn_s" onclick="addItem('surveys', 's_name', 's_url', 'edit_s_id', 'btn_s')">حفظ جديد</button>
         </div>
-        <table>
-            <thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead>
-            <tbody id="t_surveys"></tbody>
-        </table>
+        <table><thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead><tbody id="t_surveys"></tbody></table>
     </div>
 
     <div class="panel section-red">
@@ -167,78 +157,76 @@
             <input type="text" id="app_name" placeholder="الاسم">
             <input type="text" id="app_code" placeholder="الكود">
             <input type="hidden" id="edit_app_id">
-            <button class="btn-add" id="btn_app" onclick="addOrUpdateApp()">حفظ جديد</button>
+            <button class="btn-gold" id="btn_app" onclick="addOrUpdateApp()">حفظ جديد</button>
         </div>
-        <table>
-            <thead><tr><th>إجراء</th><th>الكود</th><th>الاسم</th></tr></thead>
-            <tbody id="t_apps"></tbody>
-        </table>
+        <table><thead><tr><th>إجراء</th><th>الكود</th><th>الاسم</th></tr></thead><tbody id="t_apps"></tbody></table>
     </div>
 </div>
 
 <script>
-    const authPass = prompt("الرمز السري لدخول الرئيس:");
-    if (authPass === "رئيس_2026") { document.body.style.display = "block"; } 
-    else { alert("غير مصرح!"); window.location.href = "index.html"; }
+    // 1. الأمان
+    const p = prompt("أدخل كلمة المرور:");
+    if(p === "رئيس_2026") { document.body.style.display = "block"; } else { alert("خطأ!"); window.location.href="about:blank"; }
 
+    // 2. Firebase
     const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value).then(() => alert("تم الحفظ")); }
+    // 3. وظائف الحفظ
+    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value).then(()=>alert("تم التحديث")); }
 
     function addOrUpdateCourse() {
         const id = document.getElementById('edit_c_id').value;
         const data = { name: document.getElementById('c_name').value, p1: document.getElementById('c_p1').value, p2: document.getElementById('c_p2').value };
-        if(!data.name) return;
-        if(id) db.ref('authority_data/courses/' + id).update(data);
-        else db.ref('authority_data/courses').push(data);
-        resetF(['edit_c_id', 'c_name', 'c_p1', 'c_p2'], 'btn_c');
+        if(id) db.ref('authority_data/courses/'+id).update(data); else db.ref('authority_data/courses').push(data);
+        resetF(['edit_c_id','c_name','c_p1','c_p2'], 'btn_c');
     }
 
     function addOrUpdateApp() {
         const id = document.getElementById('edit_app_id').value;
         const data = { name: document.getElementById('app_name').value, code: document.getElementById('app_code').value };
-        if(!data.name) return;
-        if(id) db.ref('applications/' + id).update(data);
-        else db.ref('applications').push(data);
-        resetF(['edit_app_id', 'app_name', 'app_code'], 'btn_app');
+        if(id) db.ref('applications/'+id).update(data); else db.ref('applications').push(data);
+        resetF(['edit_app_id','app_name','app_code'], 'btn_app');
     }
 
-    function addOrUpdate(path, ni, ui, hi, bi) {
+    function addItem(path, ni, ui, hi, bi) {
         const id = document.getElementById(hi).value;
         const data = { course: document.getElementById(ni).value, url: document.getElementById(ui).value };
-        if(!data.course) return;
-        if(id) db.ref('authority_data/' + path + '/' + id).update(data);
-        else db.ref('authority_data/' + path).push(data);
+        if(id) db.ref('authority_data/'+path+'/'+id).update(data); else db.ref('authority_data/'+path).push(data);
         resetF([hi, ni, ui], bi);
     }
 
-    function resetF(ids, bId) { ids.forEach(id => document.getElementById(id).value = ""); document.getElementById(bId).innerText = "حفظ جديد"; }
+    function resetF(ids, b) { ids.forEach(id=>document.getElementById(id).value=""); document.getElementById(b).innerText="حفظ جديد"; }
 
+    // 4. عرض البيانات (المزامنة)
     db.ref().on('value', snap => {
-        const data = snap.val() || {};
-        const auth = data.authority_data || {};
+        const d = snap.val() || {};
+        const auth = d.authority_data || {};
         document.getElementById('rulesText').value = auth.rules || "";
 
-        renderTable(auth.courses, 't_courses', (i, c) => `<tr><td><button class="btn-edit" onclick="setEC('${i}','${c.name}','${c.p1}','${c.p2}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/courses/${i}').remove()">حذف</button></td><td>${c.p2}</td><td>${c.p1}</td><td>${c.name}</td></tr>`);
-        
-        renderTable(data.applications, 't_apps', (i, a) => `<tr><td><button class="btn-edit" onclick="setEA('${i}','${a.name}','${a.code}')">تعديل</button><button class="btn-del" onclick="db.ref('applications/${i}').remove()">حذف</button></td><td>${a.code}</td><td>${a.name}</td></tr>`);
+        // الدورات
+        let hC = ""; for(let i in auth.courses) { let c = auth.courses[i]; hC += `<tr><td><button class="btn-edit" onclick="setEC('${i}','${c.name}','${c.p1}','${c.p2}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/courses/${i}').remove()">حذف</button></td><td>${c.p2}</td><td>${c.p1}</td><td>${c.name}</td></tr>`; }
+        document.getElementById('t_courses').innerHTML = hC;
 
-        const sec = { exams: ['t_exams','edit_e_id','e_name','e_url','btn_e'], correction: ['t_correction','edit_co_id','co_name','co_url','btn_co'], surveys: ['t_surveys','edit_s_id','s_name','s_url','btn_s'] };
+        // المتقدمين
+        let hA = ""; for(let i in d.applications) { let a = d.applications[i]; hA += `<tr><td><button class="btn-edit" onclick="setEA('${i}','${a.name}','${a.code}')">تعديل</button><button class="btn-del" onclick="db.ref('applications/${i}').remove()">حذف</button></td><td>${a.code}</td><td>${a.name}</td></tr>`; }
+        document.getElementById('t_apps').innerHTML = hA;
+
+        // الروابط والاستبيانات
+        const sec = { exams: 't_exams', correction: 't_correction', surveys: 't_surveys' };
         for(let s in sec) {
-            let h = ""; for(let i in auth[s]) { let it = auth[s][i]; h += `<tr><td><button class="btn-edit" onclick="setEI('${s}','${i}','${it.course}','${it.url}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/${s}/${i}').remove()">حذف</button></td><td style="font-size:0.7rem; color:var(--gold)">${it.url}</td><td>${it.course}</td></tr>`; }
-            document.querySelector(`#${sec[s][0]} tbody`).innerHTML = h;
+            let h = ""; for(let i in auth[s]) { let it = auth[s][i]; h += `<tr><td><button class="btn-edit" onclick="setEI('${s}','${i}','${it.course}','${it.url}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/${s}/${i}').remove()">حذف</button></td><td style="color:var(--gold); font-size:0.8rem;">${it.url}</td><td>${it.course}</td></tr>`; }
+            document.getElementById(sec[s]).innerHTML = h;
         }
     });
 
-    function renderTable(obj, id, template) { let h = ""; for(let i in obj) h += template(i, obj[i]); document.getElementById(id).innerHTML = h; }
-
-    function setEC(id, n, p1, p2) { document.getElementById('edit_c_id').value = id; document.getElementById('c_name').value = n; document.getElementById('c_p1').value = p1; document.getElementById('c_p2').value = p2; document.getElementById('btn_c').innerText = "تحديث"; }
-    function setEA(id, n, c) { document.getElementById('edit_app_id').value = id; document.getElementById('app_name').value = n; document.getElementById('app_code').value = c; document.getElementById('btn_app').innerText = "تحديث"; }
-    function setEI(path, id, n, u) { 
+    // 5. تعبئة بيانات التعديل
+    function setEC(id,n,p1,p2) { document.getElementById('edit_c_id').value=id; document.getElementById('c_name').value=n; document.getElementById('c_p1').value=p1; document.getElementById('c_p2').value=p2; document.getElementById('btn_c').innerText="تحديث"; }
+    function setEA(id,n,c) { document.getElementById('edit_app_id').value=id; document.getElementById('app_name').value=n; document.getElementById('app_code').value=c; document.getElementById('btn_app').innerText="تحديث"; }
+    function setEI(s,id,n,u) {
         const m = { exams: ['edit_e_id','e_name','e_url','btn_e'], correction: ['edit_co_id','co_name','co_url','btn_co'], surveys: ['edit_s_id','s_name','s_url','btn_s'] };
-        document.getElementById(m[path][0]).value = id; document.getElementById(m[path][1]).value = n; document.getElementById(m[path][2]).value = u; document.getElementById(m[path][3]).innerText = "تحديث";
+        document.getElementById(m[s][0]).value=id; document.getElementById(m[s][1]).value=n; document.getElementById(m[s][2]).value=u; document.getElementById(m[s][3]).innerText="تحديث";
     }
 </script>
 </body>
