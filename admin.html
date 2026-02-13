@@ -2,60 +2,46 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة المشرفين</title>
+    <title>لوحة المشرفين - مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.9rem; }
-        .btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 3px; color: #fff; font-weight: bold; margin: 2px; }
-        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:999; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #222; padding: 10px; text-align: center; }
+        .btn-acc { background: #27ae60; border: none; color: #fff; padding: 5px 10px; cursor: pointer; }
+        .btn-rej { background: #c0392b; border: none; color: #fff; padding: 5px 10px; cursor: pointer; }
+        #login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="loginOverlay">
-        <div style="background:#14160f; padding:30px; border:1px solid var(--army); text-align:center;">
-            <h2 style="color:var(--gold)">بوابة المشرفين</h2>
-            <input type="text" id="admCode" placeholder="الكود العسكري" style="padding:10px; margin-bottom:10px; width:100%;">
-            <input type="password" id="admPass" placeholder="كلمة المرور" style="padding:10px; margin-bottom:10px; width:100%;">
-            <button onclick="login()" style="background:var(--gold); padding:10px; width:100%; border:none; font-weight:bold; cursor:pointer;">دخول</button>
-        </div>
+
+<div id="login">
+    <div style="background:#14160f; padding:40px; border:1px solid var(--army); text-align:center;">
+        <h2 style="color:var(--gold)">بوابة المشرفين</h2>
+        <input type="text" id="admCode" placeholder="الكود العسكري"><br><br>
+        <input type="password" id="admPass" placeholder="كلمة المرور"><br><br>
+        <button onclick="admLogin()" style="background:var(--gold); padding:10px 40px; border:none; font-weight:bold;">دخول</button>
     </div>
+</div>
 
-    <div id="adminContent" style="display:none;">
-        <h1>لوحة الميدان - الإشراف</h1>
-
-        <div class="panel">
-            <h2>| إدارة القبول المبدئي</h2>
-            <table id="adm_accept">
-                <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>الحالة</th><th>إجراء</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>| فترات المقبولين</h2>
-            <table id="adm_periods">
-                <thead><tr><th>المتقدم</th><th>الدورة</th><th>الفترة</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>| إدارة نتائج الاجتياز</h2>
-            <table id="adm_pass">
-                <thead><tr><th>المتقدم</th><th>الدورة</th><th>النتيجة</th><th>إجراء</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>| روابط واستبيانات</h2>
-            <div id="adm_links_view" style="color:#ccc;"></div>
-        </div>
+<div id="main" style="display:none;">
+    <h1>لوحة الميدان</h1>
+    <div class="panel">
+        <h2>| إدارة القبول المبدئي والنتائج</h2>
+        <table id="apps">
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
+    <div class="panel">
+        <h2>| الروابط والاستبيانات (من الرئيس)</h2>
+        <table id="links">
+            <thead><tr><th>الدورة</th><th>الاختبار</th><th>التصحيح</th><th>الاستبيان</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -63,35 +49,35 @@
     const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let currentAdm = "";
+    let myCode = "";
 
-    function login() {
+    function admLogin() {
         if(document.getElementById('admPass').value === "مشرف_2026") {
-            currentAdm = document.getElementById('admCode').value || "مشرف";
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block';
-            db.ref('logs').push({ msg: `🔓 دخل المشرف: ${currentAdm}`, time: new Date().toLocaleString('ar-SA') });
-        } else { alert("خطأ"); }
+            myCode = document.getElementById('admCode').value || "مشرف";
+            document.getElementById('login').style.display='none';
+            document.getElementById('main').style.display='block';
+            db.ref('logs').push({ msg: `✅ دخل المشرف بكود: ${myCode}`, time: new Date().toLocaleString('ar-SA') });
+        } else alert("خطأ");
     }
 
-    function setAction(id, name, field, val) {
+    function updateApp(id, name, field, val) {
         let up = {}; up[field] = val;
         db.ref('applications/'+id).update(up);
-        db.ref('logs').push({ msg: `⚙️ المشرف ${currentAdm} حدد ${name} كـ ${val}`, time: new Date().toLocaleString('ar-SA') });
+        db.ref('logs').push({ msg: `⚙️ المشرف [${myCode}] حدد ${name} كـ ${val}`, time: new Date().toLocaleString('ar-SA') });
     }
 
     db.ref().on('value', snap => {
-        const val = snap.val() || {};
-        let hA="", hP="", hR="";
-        for(let i in val.applications) {
-            const app = val.applications[i];
-            hA += `<tr><td>${app.name}</td><td>${app.code}</td><td>${app.course}</td><td>${app.status}</td><td><button class="btn" style="background:#27ae60" onclick="setAction('${i}','${app.name}','status','مقبول')">قبول</button><button class="btn" style="background:#c0392b" onclick="setAction('${i}','${app.name}','status','مرفوض')">رفض</button></td></tr>`;
-            if(app.status === 'مقبول') hP += `<tr><td>${app.name}</td><td>${app.course}</td><td>${app.period}</td></tr>`;
-            hR += `<tr><td>${app.name}</td><td>${app.course}</td><td>${app.pass}</td><td><button class="btn" style="background:#2980b9" onclick="setAction('${i}','${app.name}','pass','مجتاز')">مجتاز</button><button class="btn" style="background:#d35400" onclick="setAction('${i}','${app.name}','pass','غير مجتاز')">غير مجتاز</button></td></tr>`;
+        const d = snap.val() || {};
+        let hA="", hL="";
+        for(let i in d.applications) {
+            const a = d.applications[i];
+            hA += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td>
+            <td><button class="btn-acc" onclick="updateApp('${i}','${a.name}','status','مقبول')">قبول</button><button class="btn-rej" onclick="updateApp('${i}','${a.name}','status','مرفوض')">رفض</button></td>
+            <td><button class="btn-acc" style="background:#2980b9" onclick="updateApp('${i}','${a.name}','pass','مجتاز')">مجتاز</button><button class="btn-rej" style="background:#d35400" onclick="updateApp('${i}','${a.name}','pass','غير مجتاز')">غير مجتاز</button></td></tr>`;
         }
-        document.querySelector("#adm_accept tbody").innerHTML = hA;
-        document.querySelector("#adm_periods tbody").innerHTML = hP;
-        document.querySelector("#adm_pass tbody").innerHTML = hR;
+        for(let i in d.links) hL += `<tr><td>${i}</td><td>${d.links[i].test}</td><td>${d.links[i].corr}</td><td>${d.links[i].surv}</td></tr>`;
+        document.querySelector("#apps tbody").innerHTML = hA;
+        document.querySelector("#links tbody").innerHTML = hL;
     });
 </script>
 </body>
