@@ -2,24 +2,29 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة التقديم - مارفل</title>
+    <title>بوابة المتقدمين</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; text-align: center; }
-        .box { max-width: 800px; margin: auto; background: #14160f; border: 1px solid var(--army); padding: 20px; border-radius: 10px; }
-        .section { background: rgba(0,0,0,0.5); padding: 15px; margin: 15px 0; border-right: 4px solid var(--gold); text-align: right; }
-        table { width: 100%; border-collapse: collapse; }
+        .section { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 20px; border-radius: 8px; text-align: right; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #222; padding: 10px; text-align: center; }
-        .btn { background: var(--gold); color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; border-radius: 5px; }
+        th { color: var(--gold); }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1 style="color:var(--gold)">هيئة تنظيم الدورات - دولة مارفل</h1>
-        <div class="section"><h3>| الشروط العامة</h3><div id="r_text">جاري التحميل...</div></div>
-        <div class="section"><h3>| مواعيد الدورات</h3><table id="c_table"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table></div>
-        <button class="btn" onclick="location.href='apply.html'">تقديم الآن</button>
+    <h1 style="color:var(--gold)">بوابة التدريب - مارفل</h1>
+
+    <div class="section"><h3>| الشروط العامة</h3><div id="r_text"></div></div>
+
+    <div class="section"><h3>| مواعيد الدورات</h3><table id="c_table"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table></div>
+
+    <div class="section">
+        <h3>| لوحة النتائج (القبول والاجتياز)</h3>
+        <table id="res_table"><thead><tr><th>الاسم</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead><tbody></tbody></table>
     </div>
+
+    <button style="background:var(--gold); padding:15px; border:none; cursor:pointer; font-weight:bold;" onclick="location.href='apply.html'">تقديم استمارة التحاق</button>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -28,12 +33,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    db.ref('authority').on('value', snap => {
-        const v = snap.val() || {};
-        document.getElementById('r_text').innerText = v.rules || "لا توجد شروط حالياً";
-        let h="";
-        for(let i in v.courses) h+=`<tr><td>${v.courses[i].name}</td><td>${v.courses[i].p1}</td><td>${v.courses[i].p2}</td></tr>`;
-        document.querySelector("#c_table tbody").innerHTML = h;
+    db.ref().on('value', snap => {
+        let d = snap.val() || {};
+        document.getElementById('r_text').innerText = (d.settings || {}).rules || "لا توجد شروط";
+        
+        let hC="", hR="";
+        for(let i in d.courses) hC += `<tr><td>${d.courses[i].name}</td><td>${d.courses[i].p1}</td><td>${d.courses[i].p2}</td></tr>`;
+        for(let i in d.applications) hR += `<tr><td>${d.applications[i].name}</td><td>${d.applications[i].course}</td><td>${d.applications[i].status || 'قيد المعالجة'}</td><td>${d.applications[i].pass || '---'}</td></tr>`;
+        
+        document.querySelector("#c_table tbody").innerHTML = hC;
+        document.querySelector("#res_table tbody").innerHTML = hR;
     });
 </script>
 </body>
