@@ -6,19 +6,18 @@
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 10000; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #14160f; border: 1px solid var(--army); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
         .btn-login { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #mainContent { display: none; }
-        .panel { background: #14160f; border: 1px solid rgba(197, 160, 89, 0.2); padding: 20px; margin-bottom: 25px; border-radius: 8px; }
-        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
+        .panel { background: #0c0d08; border: 1px solid #1a1c12; padding: 20px; margin-bottom: 25px; border-radius: 8px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 15px; margin-bottom: 20px; font-size: 1.1rem; }
         table { width: 100%; border-collapse: collapse; background: #080905; }
         th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .survey-text { background: #111; padding: 10px; border-right: 3px solid var(--gold); color: #ddd; font-size: 0.9rem; margin-bottom: 10px; }
+        .btn-act { padding: 4px 8px; border: none; border-radius: 4px; color: #fff; cursor: pointer; margin: 2px; font-weight: bold; }
+        .survey-card { background: #111; padding: 10px; border-right: 3px solid var(--gold); margin-bottom: 10px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -28,36 +27,27 @@
         <h2 style="color:var(--gold)">بوابة المشرفين</h2>
         <input type="text" id="militaryCode" placeholder="الكود العسكري" value="">
         <input type="password" id="admPass" placeholder="كلمة المرور">
-        <button class="btn-login" onclick="checkAuth()">دخول</button>
+        <button class="btn-login" onclick="checkAuth()">دخول الميدان</button>
     </div>
 </div>
 
 <div id="mainContent">
-    <h1 style="text-align: center; color: var(--gold);">لوحة الميدان - هيئة تنظيم الدورات</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة الميدان - مارفل</h1>
 
     <div class="panel">
-        <h2>| مواعيد الدورات</h2>
-        <table id="v_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table>
+        <h2>| إدارة المتقدمين (ID + الرولات)</h2>
+        <table id="v_discord">
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="panel">
-        <h2>| بيانات الدسكورد (ID + الرولات)</h2>
-        <table id="v_discord"><thead><tr><th>المتقدم</th><th>ID</th><th>الرولات</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div class="panel">
-        <h2>| إدارة قبول المتقدمين والنتائج</h2>
-        <table id="v_apps"><thead><tr><th>المتقدم</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div class="panel">
-        <h2>| روابط الاختبارات والتصحيح</h2>
-        <table id="v_links"><thead><tr><th>الدورة</th><th>الاختبار</th><th>التصحيح</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div class="panel">
-        <h2>| استبيانات الدورات (نصوص)</h2>
-        <div id="v_surveys"></div>
+        <h2>| المواعيد والروابط التشغيلية</h2>
+        <table id="v_ops">
+            <thead><tr><th>اسم الدورة</th><th>ف1</th><th>ف2</th><th>المحتوى (رابط/استبيان)</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 
@@ -67,46 +57,45 @@
     const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let currentCode = "";
+    let currentAdm = "";
 
     function checkAuth() {
         const code = document.getElementById('militaryCode').value || "غير معروف";
         if(document.getElementById('admPass').value === "مشرف_2026") {
-            currentCode = code;
+            currentAdm = code;
             document.getElementById('loginOverlay').style.display='none';
             document.getElementById('mainContent').style.display='block';
-            db.ref('system_logs').push({msg: `✅ دخول مشرف: ${currentCode}`, time: new Date().toLocaleString('ar-SA')});
+            db.ref('logs').push({msg: `✅ دخول مشرف: ${currentAdm}`, time: new Date().toLocaleString('ar-SA')});
         } else {
-            db.ref('system_logs').push({msg: `❌ دخول فاشل مشرف: ${code}`, time: new Date().toLocaleString('ar-SA')});
+            db.ref('logs').push({msg: `❌ دخول فاشل مشرف: ${code}`, time: new Date().toLocaleString('ar-SA')});
             alert("خطأ");
         }
     }
 
-    function updateApp(id, name, val, type) {
+    function setStatus(id, name, val, type) {
         let update = (type==='stat') ? {status: val} : {pass: val};
         db.ref('applications/'+id).update(update);
-        db.ref('system_logs').push({msg: `⚙️ [${currentCode}] عدل ${name} إلى ${val}`, time: new Date().toLocaleString('ar-SA')});
+        db.ref('logs').push({msg: `⚙️ المشرف ${currentAdm} حدد ${name} كـ ${val}`, time: new Date().toLocaleString('ar-SA')});
     }
 
     db.ref().on('value', snap => {
-        const d = snap.val() || {};
-        const auth = d.authority || {};
-        const apps = d.applications || {};
+        const data = snap.val() || {};
+        const db_data = data.db || {};
+        const apps = data.applications || {};
 
-        let hC="", hD="", hA="", hL="", hS="";
-        for(let i in auth.courses) hC += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
-        for(let i in apps) {
-            hD += `<tr><td>${apps[i].name}</td><td>${apps[i].discordID}</td><td>${apps[i].roles}</td></tr>`;
-            hA += `<tr><td>${apps[i].name}</td><td>${apps[i].course}</td><td><button class="btn-acc" onclick="updateApp('${i}','${apps[i].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateApp('${i}','${apps[i].name}','مرفوض','stat')">رفض</button></td><td><button class="btn-acc" style="background:#2980b9" onclick="updateApp('${i}','${apps[i].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#d35400" onclick="updateApp('${i}','${apps[i].name}','راسب','pass')">راسب</button></td></tr>`;
+        let hD="", hO="";
+        for(let i in apps) hD += `<tr><td>${apps[i].name}</td><td>${apps[i].code}</td><td>${apps[i].discordID}</td><td>${apps[i].roles}</td><td>${apps[i].course}</td>
+        <td><button class="btn-act" style="background:#27ae60" onclick="setStatus('${i}','${apps[i].name}','مقبول','stat')">قبول</button><button class="btn-act" style="background:#c0392b" onclick="setStatus('${i}','${apps[i].name}','رفض','stat')">رفض</button></td>
+        <td><button class="btn-act" style="background:#2980b9" onclick="setStatus('${i}','${apps[i].name}','ناجح','pass')">ناجح</button><button class="btn-act" style="background:#d35400" onclick="setStatus('${i}','${apps[i].name}','راسب','pass')">راسب</button></td></tr>`;
+        
+        for(let i in db_data.courses) {
+            const links = (db_data.links || {})[i] || {exam:'#', corr:'#'};
+            const survey = (db_data.surveys || {})[i] || {text:'لا يوجد'};
+            hO += `<tr><td>${db_data.courses[i].name}</td><td>${db_data.courses[i].p1}</td><td>${db_data.courses[i].p2}</td><td><a href="${links.exam}" target="_blank" style="color:#3498db">الاختبار</a> | <a href="${links.corr}" target="_blank" style="color:#3498db">التصحيح</a><br><small>${survey.text}</small></td></tr>`;
         }
-        for(let i in auth.links) hL += `<tr><td>${auth.links[i].name}</td><td><a href="${auth.links[i].exam}" target="_blank" style="color:#3498db">فتح</a></td><td><a href="${auth.links[i].corr}" target="_blank" style="color:#3498db">فتح</a></td></tr>`;
-        for(let i in auth.surveys) hS += `<div class="survey-text"><strong>${auth.surveys[i].name}:</strong><br>${auth.surveys[i].text}</div>`;
 
-        document.querySelector("#v_courses tbody").innerHTML = hC;
         document.querySelector("#v_discord tbody").innerHTML = hD;
-        document.querySelector("#v_apps tbody").innerHTML = hA;
-        document.querySelector("#v_links tbody").innerHTML = hL;
-        document.getElementById('view_surveys').innerHTML = hS;
+        document.querySelector("#v_ops tbody").innerHTML = hO;
     });
 </script>
 </body>
