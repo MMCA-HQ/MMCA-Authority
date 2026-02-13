@@ -2,31 +2,27 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>القيادة العليا | دولة مارفل</title>
+    <title>القيادة العليا - مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
-        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; margin: 0; }
+        body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #14160f; border: 1px solid var(--army); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid var(--army); color: #fff; text-align: center; border-radius: 4px; }
-        .btn-main { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 30px; border-radius: 8px; }
         h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
-        .admin-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        input, textarea, select { background: #000; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 4px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: #080905; margin-top: 10px; }
-        th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
-        th { color: var(--gold); background: #0d0e0a; }
-        .btn-del { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
-        #logBox { max-height: 250px; overflow-y: auto; background: #000; padding: 15px; border: 1px solid #222; color: #00ff00; font-family: monospace; }
+        input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 4px; margin: 5px; }
+        .log-box { background: #000; height: 300px; overflow-y: auto; padding: 15px; border: 1px solid #222; font-family: monospace; color: #00ff00; }
+        .footer { text-align: center; padding: 20px; color: var(--gold); border-top: 1px solid var(--army); }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 style="color:var(--gold)">دخول القيادة العليا</h2>
+        <h2 style="color:var(--gold)">بوابة القيادة العليا</h2>
         <input type="text" id="fakeCode" placeholder="الكود العسكري" value="">
         <input type="password" id="realPass" placeholder="كلمة المرور">
         <button class="btn-main" style="width:100%" onclick="checkAuth()">دخول</button>
@@ -34,46 +30,25 @@
 </div>
 
 <div id="mainContent">
-    <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة القيادة - مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold); margin-bottom: 40px;">لوحة القيادة - مارفل</h1>
 
     <div class="panel">
-        <h2>| الشروط العامة</h2>
-        <textarea id="rulesText" style="width: 100%; height: 60px;"></textarea>
-        <button class="btn-main" style="width: 100%; margin-top:10px" onclick="saveRules()">تحديث الشروط</button>
+        <h2>| إدارة محتوى الدورات (شروط، مواعيد، روابط، استبيانات)</h2>
+        <input type="text" id="m_name" placeholder="اسم الدورة">
+        <input type="text" id="m_p1" placeholder="الفترة 1">
+        <input type="text" id="m_p2" placeholder="الفترة 2">
+        <input type="text" id="m_exam" placeholder="رابط الاختبار">
+        <input type="text" id="m_corr" placeholder="رابط التصحيح">
+        <textarea id="m_survey" placeholder="نص الاستبيان الواضح" style="width:90%; height:60px;"></textarea>
+        <button class="btn-main" onclick="saveData()">حفظ البيانات</button>
     </div>
 
     <div class="panel">
-        <h2>| إدارة البيانات (مواعيد / روابط / استبيانات)</h2>
-        <div class="admin-controls">
-            <input type="text" id="data_name" placeholder="اسم الدورة">
-            <select id="data_type">
-                <option value="course">موعد دورة</option>
-                <option value="exam">رابط اختبار</option>
-                <option value="correction">رابط تصحيح</option>
-                <option value="survey">نص استبيان</option>
-            </select>
-            <input type="text" id="val1" placeholder="القيمة 1 (موعد ف1 / الرابط / النص)">
-            <input type="text" id="val2" placeholder="القيمة 2 (موعد ف2 - اختياري)">
-            <button class="btn-main" onclick="saveGlobalData()">إضافة للوحة</button>
-        </div>
-        <table>
-            <thead><tr><th>الدورة</th><th>النوع</th><th>المحتوى</th><th>حذف</th></tr></thead>
-            <tbody id="tbody_global"></tbody>
-        </table>
+        <h2>| سجل اللوقات المركزي (الدخول والعمليات)</h2>
+        <div id="logBox" class="log-box"></div>
     </div>
 
-    <div class="panel">
-        <h2>| إدارة المتقدمين (Discord ID + Roles)</h2>
-        <table>
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>ID</th><th>الرولات</th><th>تصفير</th><th>طرد</th></tr></thead>
-            <tbody id="tbody_manage_apps"></tbody>
-        </table>
-    </div>
-
-    <div class="panel">
-        <h2>| السجل المركزي (Logs)</h2>
-        <div id="logBox"></div>
-    </div>
+    <div class="footer">حقوق - دولة مارفل | هيئة تنظيم الدورات © 2026</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -83,43 +58,34 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function pushLog(msg) { db.ref('system_logs').push({ msg: msg, time: new Date().toLocaleString('ar-SA') }); }
+    function pushLog(msg) { db.ref('system_logs').push({ msg, time: new Date().toLocaleString('ar-SA') }); }
 
     function checkAuth() {
         if (document.getElementById('realPass').value === "رئيس_2026") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            pushLog(`تم تسجيل الدخول باسم ( الرئيس )`);
+            pushLog(`👑 دخول ناجح للرئيس`);
         } else {
             pushLog(`⚠️ محاولة دخول فاشلة للرئيس! الكود: (${document.getElementById('fakeCode').value || 'فارغ'})`);
             alert("خطأ");
         }
     }
 
-    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value); pushLog("الرئيس: حدث الشروط"); }
-
-    function saveGlobalData() {
-        const obj = { name: document.getElementById('data_name').value, type: document.getElementById('data_type').value, v1: document.getElementById('val1').value, v2: document.getElementById('val2').value };
-        db.ref('authority_data/global').push(obj);
-        pushLog(`الرئيس: أضاف ${obj.type} لدورة ${obj.name}`);
+    function saveData() {
+        const name = document.getElementById('m_name').value;
+        const data = { 
+            name, p1: document.getElementById('m_p1').value, p2: document.getElementById('m_p2').value,
+            exam: document.getElementById('m_exam').value, corr: document.getElementById('m_corr').value, survey: document.getElementById('m_survey').value
+        };
+        db.ref('authority_data/assets/'+name).set(data);
+        db.ref('authority_data/courses/'+name).set({name, p1: data.p1, p2: data.p2});
+        pushLog(`🛠️ الرئيس عدل بيانات دورة: ${name}`);
     }
 
-    db.ref().on('value', (snap) => {
-        const root = snap.val() || {};
-        const apps = root.applications || {};
-        const global = (root.authority_data || {}).global || {};
-        document.getElementById('rulesText').value = (root.authority_data || {}).rules || "";
-        
-        let hG = "";
-        for(let i in global) hG += `<tr><td>${global[i].name}</td><td>${global[i].type}</td><td>${global[i].v1.substring(0,20)}...</td><td><button class="btn-del" onclick="db.ref('authority_data/global/${i}').remove()">X</button></td></tr>`;
-        document.getElementById('tbody_global').innerHTML = hG;
-
-        let hAp = "";
-        for(let id in apps) hAp += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].discordID || '---'}</td><td>${apps[id].roles || '---'}</td><td><button class="btn-del" style="background:#f39c12" onclick="db.ref('applications/${id}').update({status:'تحت المراجعة',pass:'بانتظار الدورة'})">تصفير</button></td><td><button class="btn-del" onclick="db.ref('applications/${id}').remove()">طرد</button></td></tr>`;
-        document.getElementById('tbody_manage_apps').innerHTML = hAp;
-
+    db.ref('system_logs').on('value', (snap) => {
         let hL = "";
-        Object.values(root.system_logs || {}).reverse().slice(0, 50).forEach(l => hL += `<div>[${l.time}] ${l.msg}</div>`);
+        const logs = snap.val() || {};
+        Object.values(logs).reverse().slice(0, 100).forEach(l => hL += `<div>[${l.time}] ${l.msg}</div>`);
         document.getElementById('logBox').innerHTML = hL;
     });
 </script>
