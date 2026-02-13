@@ -2,48 +2,63 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة الرئيس</title>
+    <title>القيادة العليا - مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
-        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 25px; border-radius: 8px; }
-        input, textarea { background:#000; color:#fff; border:1px solid #333; padding:10px; margin:5px; border-radius:5px; }
-        .btn-main { background:var(--gold); border:none; padding:10px 20px; font-weight:bold; cursor:pointer; }
-        .log-box { background:#000; height:300px; overflow-y:scroll; padding:15px; color:#00ff00; border:1px solid #333; font-family:monospace; }
+        .panel { background: #14160f; border: 1px solid var(--army); padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 10px; }
+        input, textarea { background: #000; color: #fff; border: 1px solid #333; padding: 8px; margin: 5px; border-radius: 4px; width: 250px; }
+        .btn-gold { background: var(--gold); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .log-box { background: #000; height: 250px; overflow-y: auto; padding: 15px; border: 1px solid #222; color: #00ff00; font-family: monospace; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #222; padding: 8px; text-align: center; font-size: 0.9rem; }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="loginOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:999;">
-        <div style="background:#14160f; padding:30px; border:1px solid var(--army); text-align:center;">
-            <h2 style="color:var(--gold)">لوحة التحكم العليا</h2>
-            <input type="password" id="resPass" placeholder="كلمة المرور" style="width:100%">
-            <button onclick="login()" class="btn-main" style="width:100%; margin-top:10px;">دخول</button>
-        </div>
+
+<div id="loginOverlay">
+    <div style="background:#14160f; padding:40px; border:1px solid var(--army); text-align:center; border-radius:8px;">
+        <h2 style="color:var(--gold)">بوابة الرئيس</h2>
+        <input type="password" id="pass" placeholder="كلمة المرور" style="width:100%"><br><br>
+        <button class="btn-gold" onclick="login()" style="width:100%">دخول</button>
+    </div>
+</div>
+
+<div id="content" style="display:none;">
+    <h1>لوحة القيادة العليا - مارفل</h1>
+
+    <div class="panel">
+        <h2>| إدارة الشروط</h2>
+        <textarea id="rules" style="width:90%; height:50px;"></textarea><br>
+        <button class="btn-gold" onclick="updateRules()">حفظ الشروط</button>
     </div>
 
-    <div id="resContent" style="display:none;">
-        <h1>لوحة الرئيس - إدارة شاملة</h1>
-
-        <div class="panel">
-            <h2>| إضافة الشروط</h2>
-            <textarea id="rulesInput" style="width:90%; height:60px;"></textarea><br>
-            <button class="btn-main" onclick="db.ref('data/rules').set(document.getElementById('rulesInput').value)">حفظ الشروط</button>
-        </div>
-
-        <div class="panel">
-            <h2>| إدارة المواعيد</h2>
-            <input type="text" id="c_name" placeholder="اسم الدورة">
-            <input type="text" id="c_p1" placeholder="ف1">
-            <input type="text" id="c_p2" placeholder="ف2">
-            <button class="btn-main" onclick="saveData('courses', {name:document.getElementById('c_name').value, p1:document.getElementById('c_p1').value, p2:document.getElementById('c_p2').value}, 'c_name')">حفظ/تحديث</button>
-            <div id="res_courses_table"></div>
-        </div>
-
-        <div class="panel">
-            <h2>| سجل اللوقات (دائم)</h2>
-            <div id="logBox" class="log-box"></div>
-        </div>
+    <div class="panel">
+        <h2>| إدارة المواعيد</h2>
+        <input type="text" id="c_name" placeholder="اسم الدورة">
+        <input type="text" id="c_p1" placeholder="الفترة الأولى">
+        <input type="text" id="c_p2" placeholder="الفترة الثانية">
+        <button class="btn-gold" onclick="saveItem('courses', 'c_name', ['p1','p2'], ['c_p1','c_p2'])">إضافة/تعديل</button>
+        <table id="table_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th><th>إجراء</th></tr></thead><tbody></tbody></table>
     </div>
+
+    <div class="panel">
+        <h2>| إدارة الروابط والاستبيانات</h2>
+        <input type="text" id="l_name" placeholder="اسم الدورة">
+        <input type="text" id="l_test" placeholder="رابط الاختبار">
+        <input type="text" id="l_corr" placeholder="رابط التصحيح">
+        <input type="text" id="l_surv" placeholder="نص الاستبيان">
+        <button class="btn-gold" onclick="saveItem('links', 'l_name', ['test','corr','surv'], ['l_test','l_corr','l_surv'])">حفظ</button>
+        <table id="table_links"><thead><tr><th>الدورة</th><th>اختبار</th><th>تصحيح</th><th>استبيان</th><th>إجراء</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="panel">
+        <h2>| نظام اللوقات المتصل (Logs)</h2>
+        <div id="logBox" class="log-box"></div>
+    </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -53,25 +68,43 @@
     const db = firebase.database();
 
     function login() {
-        if(document.getElementById('resPass').value === "رئيس_2026") {
+        if(document.getElementById('pass').value === "رئيس_2026") {
             document.getElementById('loginOverlay').style.display='none';
-            document.getElementById('resContent').style.display='block';
-            db.ref('logs').push({ msg: "👑 الرئيس دخل النظام", time: new Date().toLocaleString('ar-SA') });
-        } else { alert("خطأ"); }
+            document.getElementById('content').style.display='block';
+            addLog("👑 الرئيس دخل النظام");
+        } else alert("خطأ");
     }
 
-    function saveData(path, data, resetId) {
-        db.ref(path+'/'+data.name).set(data);
-        db.ref('logs').push({ msg: `🛠️ الرئيس أضاف/عدل في ${path}: ${data.name}`, time: new Date().toLocaleString('ar-SA') });
-        document.getElementById(resetId).value = "";
+    function addLog(m) { db.ref('logs').push({ msg: m, time: new Date().toLocaleString('ar-SA') }); }
+
+    function updateRules() {
+        const val = document.getElementById('rules').value;
+        db.ref('settings/rules').set(val);
+        addLog("📝 تم تعديل الشروط العامة");
+    }
+
+    function saveItem(path, nameId, keys, inputIds) {
+        const name = document.getElementById(nameId).value;
+        if(!name) return;
+        let data = { name: name };
+        keys.forEach((k, i) => data[k] = document.getElementById(inputIds[i]).value);
+        db.ref(path + '/' + name).set(data);
+        addLog(`🛠️ تعديل/إضافة في ${path}: ${name}`);
+        [nameId, ...inputIds].forEach(id => document.getElementById(id).value = "");
     }
 
     db.ref().on('value', snap => {
-        const val = snap.val() || {};
-        let hLog = "";
-        const logs = Object.values(val.logs || {}).reverse();
-        logs.forEach(l => hLog += `<div>[${l.time}] ${l.msg}</div>`);
-        document.getElementById('logBox').innerHTML = hLog;
+        const data = snap.val() || {};
+        // تحديث الجداول واللوقات فوراً
+        let hC="", hL="", hLogs="";
+        for(let i in data.courses) hC += `<tr><td>${i}</td><td>${data.courses[i].p1}</td><td>${data.courses[i].p2}</td><td><button onclick="db.ref('courses/${i}').remove()">حذف</button></td></tr>`;
+        for(let i in data.links) hL += `<tr><td>${i}</td><td>${data.links[i].test}</td><td>${data.links[i].corr}</td><td>${data.links[i].surv}</td><td><button onclick="db.ref('links/${i}').remove()">حذف</button></td></tr>`;
+        Object.values(data.logs || {}).reverse().forEach(l => hLogs += `<div>[${l.time}] ${l.msg}</div>`);
+        
+        document.querySelector("#table_courses tbody").innerHTML = hC;
+        document.querySelector("#table_links tbody").innerHTML = hL;
+        document.getElementById('logBox').innerHTML = hLogs;
+        document.getElementById('rules').value = data.settings?.rules || "";
     });
 </script>
 </body>
