@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة الميدان - هيئة تنظيم الدورات</title>
+    <title>لوحة الميدان - مارفل</title>
     <style>
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; }
@@ -16,19 +16,18 @@
         table { width: 100%; border-collapse: collapse; background: #080905; margin-bottom: 10px; }
         th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .survey-text { background: #1a1d12; padding: 15px; border-radius: 4px; color: #fff; font-size: 1rem; border-right: 4px solid var(--gold); line-height: 1.6; }
-        .btn-action { padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; color: #fff; margin: 2px; }
-        .footer { text-align: center; margin-top: 50px; padding: 20px; color: var(--gold); border-top: 1px solid var(--army); }
+        .survey-box { background: #111; padding: 10px; border-right: 3px solid var(--gold); margin-bottom: 10px; font-size: 0.9rem; color: #ddd; }
+        .footer { text-align: center; color: var(--gold); border-top: 1px solid var(--army); padding: 20px; margin-top: 50px; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 style="color:var(--gold)">بوابة دخول المشرفين</h2>
+        <h2 style="color:var(--gold)">بوابة المشرفين</h2>
         <input type="text" id="militaryCode" placeholder="الكود العسكري" value="">
         <input type="password" id="admPass" placeholder="كلمة المرور">
-        <button class="btn-login" onclick="checkAuth()">دخول النظام</button>
+        <button class="btn-login" onclick="checkAuth()">دخول</button>
     </div>
 </div>
 
@@ -36,40 +35,18 @@
     <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة الميدان - مارفل</h1>
 
     <div class="panel">
-        <h2>| مواعيد الدورات</h2>
-        <table id="table_courses">
-            <thead><tr><th>الدورة</th><th>الفترة الأولى</th><th>الفترة الثانية</th></tr></thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <div class="panel">
-        <h2>| بيانات الدخول (ID + الرولات)</h2>
-        <table id="table_discord">
-            <thead><tr><th>المتقدم</th><th>Discord ID</th><th>الرولات الحالية</th></tr></thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <div class="panel">
-        <h2>| إدارة قبول المتقدمين والنتائج</h2>
-        <table id="table_apps">
-            <thead><tr><th>المتقدم</th><th>الكود</th><th>الدورة</th><th>حالة القبول</th><th>حالة الاجتياز</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <h2>| مواعيد الدورات الحالية</h2>
+        <table id="view_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
         <h2>| روابط الاختبارات والتصحيح</h2>
-        <table id="table_links">
-            <thead><tr><th>الدورة</th><th>رابط الاختبار</th><th>رابط التصحيح</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <table id="view_links"><thead><tr><th>الدورة</th><th>الاختبار</th><th>التصحيح</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
-        <h2>| استبيانات الدورات (نصوص واضحة)</h2>
-        <div id="survey_container"></div>
+        <h2>| استبيانات الدورات</h2>
+        <div id="view_surveys"></div>
     </div>
 
     <div class="footer">حقوق - دولة مارفل | هيئة تنظيم الدورات © 2026</div>
@@ -83,60 +60,35 @@
     const db = firebase.database();
     let currentCode = "";
 
-    function pushLog(msg) { db.ref('system_logs').push({ msg, time: new Date().toLocaleString('ar-SA') }); }
-
     function checkAuth() {
         const inputCode = document.getElementById('militaryCode').value || "غير محدد";
         if (document.getElementById('admPass').value === "مشرف_2026") {
             currentCode = inputCode;
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            pushLog(`✅ دخول ناجح للمشرف: (${currentCode})`);
+            db.ref('system_logs').push({ msg: `✅ دخل المشرف: ${currentCode}`, time: new Date().toLocaleString('ar-SA') });
         } else {
-            pushLog(`❌ دخول فاشل للمشرف! الكود المستخدم: (${inputCode})`);
-            alert("خطأ في البيانات");
+            alert("خطأ");
         }
     }
 
-    function updateAction(id, name, val, type) {
-        let field = (type === 'stat') ? {status: val} : {pass: val};
-        db.ref('applications/'+id).update(field);
-        pushLog(`⚙️ [${currentCode}] عدل ${type==='stat'?'القبول':'النتيجة'} لـ ${name} إلى: ${val}`);
-    }
-
-    db.ref().on('value', (snap) => {
-        const data = snap.val() || {};
-        const apps = data.applications || {};
-        const auth = data.authority_data || {};
-
-        // 1. المواعيد
+    db.ref('authority_data').on('value', (snap) => {
+        const auth = snap.val() || {};
+        
+        // تحديث المواعيد
         let hC = "";
-        for(let i in auth.courses) hC += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
-        document.querySelector("#table_courses tbody").innerHTML = hC;
+        for(let id in auth.courses) hC += `<tr><td>${auth.courses[id].name}</td><td>${auth.courses[id].p1}</td><td>${auth.courses[id].p2}</td></tr>`;
+        document.querySelector("#view_courses tbody").innerHTML = hC;
 
-        // 2. الدسكورد (ID + رولات)
-        let hD = "";
-        for(let id in apps) hD += `<tr><td>${apps[id].name}</td><td><code>${apps[id].discordID}</code></td><td>${apps[id].roles}</td></tr>`;
-        document.querySelector("#table_discord tbody").innerHTML = hD;
-
-        // 3. إدارة القبول
-        let hA = "";
-        for(let id in apps) hA += `<tr><td>${apps[id].name}</td><td>${apps[id].code}</td><td>${apps[id].course}</td>
-        <td><button class="btn-action" style="background:#27ae60" onclick="updateAction('${id}','${apps[id].name}','مقبول','stat')">قبول</button>
-            <button class="btn-action" style="background:#c0392b" onclick="updateAction('${id}','${apps[id].name}','مرفوض','stat')">رفض</button></td>
-        <td><button class="btn-action" style="background:#2980b9" onclick="updateAction('${id}','${apps[id].name}','ناجح','pass')">ناجح</button>
-            <button class="btn-action" style="background:#d35400" onclick="updateAction('${id}','${apps[id].name}','راسب','pass')">راسب</button></td></tr>`;
-        document.querySelector("#table_apps tbody").innerHTML = hA;
-
-        // 4. الروابط
+        // تحديث الروابط
         let hL = "";
-        for(let i in auth.assets) hL += `<tr><td>${auth.assets[i].name}</td><td><a href="${auth.assets[i].exam}" target="_blank" style="color:#3498db">فتح الاختبار</a></td><td><a href="${auth.assets[i].corr}" target="_blank" style="color:#3498db">فتح التصحيح</a></td></tr>`;
-        document.querySelector("#table_links tbody").innerHTML = hL;
+        for(let id in auth.links) hL += `<tr><td>${auth.links[id].name}</td><td><a href="${auth.links[id].exam}" target="_blank" style="color:#3498db">فتح</a></td><td><a href="${auth.links[id].corr}" target="_blank" style="color:#3498db">فتح</a></td></tr>`;
+        document.querySelector("#view_links tbody").innerHTML = hL;
 
-        // 5. الاستبيانات
+        // تحديث الاستبيانات
         let hS = "";
-        for(let i in auth.assets) hS += `<div style="margin-bottom:15px;"><strong>دورة ${auth.assets[i].name}:</strong><div class="survey-text">${auth.assets[i].survey}</div></div>`;
-        document.getElementById('survey_container').innerHTML = hS;
+        for(let id in auth.surveys) hS += `<div class="survey-box"><strong>${auth.surveys[id].name}:</strong><br>${auth.surveys[id].text}</div>`;
+        document.getElementById('view_surveys').innerHTML = hS;
     });
 </script>
 </body>
