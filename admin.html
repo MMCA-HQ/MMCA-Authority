@@ -13,11 +13,12 @@
         #mainContent { display: none; }
         .panel { background: #14160f; border: 1px solid rgba(197, 160, 89, 0.2); padding: 20px; margin-bottom: 25px; border-radius: 8px; }
         h2 { color: var(--gold); border-right: 5px solid var(--gold); padding-right: 15px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #080905; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #080905; }
         th, td { border: 1px solid #1a1d12; padding: 10px; text-align: center; font-size: 0.85rem; }
         th { color: var(--gold); background: #0d0e0a; }
-        .survey-box { background: #111; padding: 10px; border-right: 3px solid var(--gold); margin-bottom: 10px; font-size: 0.9rem; color: #ddd; }
-        .footer { text-align: center; color: var(--gold); border-top: 1px solid var(--army); padding: 20px; margin-top: 50px; }
+        .btn-acc { background: #27ae60; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-rej { background: #c0392b; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .survey-text { background: #111; padding: 10px; border-right: 3px solid var(--gold); color: #ddd; font-size: 0.9rem; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -32,24 +33,32 @@
 </div>
 
 <div id="mainContent">
-    <h1 style="text-align: center; color: var(--gold); margin-bottom: 30px;">لوحة الميدان - مارفل</h1>
+    <h1 style="text-align: center; color: var(--gold);">لوحة الميدان - هيئة تنظيم الدورات</h1>
 
     <div class="panel">
-        <h2>| مواعيد الدورات الحالية</h2>
-        <table id="view_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table>
+        <h2>| مواعيد الدورات</h2>
+        <table id="v_courses"><thead><tr><th>الدورة</th><th>ف1</th><th>ف2</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="panel">
+        <h2>| بيانات الدسكورد (ID + الرولات)</h2>
+        <table id="v_discord"><thead><tr><th>المتقدم</th><th>ID</th><th>الرولات</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="panel">
+        <h2>| إدارة قبول المتقدمين والنتائج</h2>
+        <table id="v_apps"><thead><tr><th>المتقدم</th><th>الدورة</th><th>القبول</th><th>الاجتياز</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
         <h2>| روابط الاختبارات والتصحيح</h2>
-        <table id="view_links"><thead><tr><th>الدورة</th><th>الاختبار</th><th>التصحيح</th></tr></thead><tbody></tbody></table>
+        <table id="v_links"><thead><tr><th>الدورة</th><th>الاختبار</th><th>التصحيح</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="panel">
-        <h2>| استبيانات الدورات</h2>
-        <div id="view_surveys"></div>
+        <h2>| استبيانات الدورات (نصوص)</h2>
+        <div id="v_surveys"></div>
     </div>
-
-    <div class="footer">حقوق - دولة مارفل | هيئة تنظيم الدورات © 2026</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -61,33 +70,42 @@
     let currentCode = "";
 
     function checkAuth() {
-        const inputCode = document.getElementById('militaryCode').value || "غير محدد";
-        if (document.getElementById('admPass').value === "مشرف_2026") {
-            currentCode = inputCode;
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            db.ref('system_logs').push({ msg: `✅ دخل المشرف: ${currentCode}`, time: new Date().toLocaleString('ar-SA') });
+        const code = document.getElementById('militaryCode').value || "غير معروف";
+        if(document.getElementById('admPass').value === "مشرف_2026") {
+            currentCode = code;
+            document.getElementById('loginOverlay').style.display='none';
+            document.getElementById('mainContent').style.display='block';
+            db.ref('system_logs').push({msg: `✅ دخول مشرف: ${currentCode}`, time: new Date().toLocaleString('ar-SA')});
         } else {
+            db.ref('system_logs').push({msg: `❌ دخول فاشل مشرف: ${code}`, time: new Date().toLocaleString('ar-SA')});
             alert("خطأ");
         }
     }
 
-    db.ref('authority_data').on('value', (snap) => {
-        const auth = snap.val() || {};
-        
-        // تحديث المواعيد
-        let hC = "";
-        for(let id in auth.courses) hC += `<tr><td>${auth.courses[id].name}</td><td>${auth.courses[id].p1}</td><td>${auth.courses[id].p2}</td></tr>`;
-        document.querySelector("#view_courses tbody").innerHTML = hC;
+    function updateApp(id, name, val, type) {
+        let update = (type==='stat') ? {status: val} : {pass: val};
+        db.ref('applications/'+id).update(update);
+        db.ref('system_logs').push({msg: `⚙️ [${currentCode}] عدل ${name} إلى ${val}`, time: new Date().toLocaleString('ar-SA')});
+    }
 
-        // تحديث الروابط
-        let hL = "";
-        for(let id in auth.links) hL += `<tr><td>${auth.links[id].name}</td><td><a href="${auth.links[id].exam}" target="_blank" style="color:#3498db">فتح</a></td><td><a href="${auth.links[id].corr}" target="_blank" style="color:#3498db">فتح</a></td></tr>`;
-        document.querySelector("#view_links tbody").innerHTML = hL;
+    db.ref().on('value', snap => {
+        const d = snap.val() || {};
+        const auth = d.authority || {};
+        const apps = d.applications || {};
 
-        // تحديث الاستبيانات
-        let hS = "";
-        for(let id in auth.surveys) hS += `<div class="survey-box"><strong>${auth.surveys[id].name}:</strong><br>${auth.surveys[id].text}</div>`;
+        let hC="", hD="", hA="", hL="", hS="";
+        for(let i in auth.courses) hC += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
+        for(let i in apps) {
+            hD += `<tr><td>${apps[i].name}</td><td>${apps[i].discordID}</td><td>${apps[i].roles}</td></tr>`;
+            hA += `<tr><td>${apps[i].name}</td><td>${apps[i].course}</td><td><button class="btn-acc" onclick="updateApp('${i}','${apps[i].name}','مقبول','stat')">قبول</button><button class="btn-rej" onclick="updateApp('${i}','${apps[i].name}','مرفوض','stat')">رفض</button></td><td><button class="btn-acc" style="background:#2980b9" onclick="updateApp('${i}','${apps[i].name}','ناجح','pass')">ناجح</button><button class="btn-rej" style="background:#d35400" onclick="updateApp('${i}','${apps[i].name}','راسب','pass')">راسب</button></td></tr>`;
+        }
+        for(let i in auth.links) hL += `<tr><td>${auth.links[i].name}</td><td><a href="${auth.links[i].exam}" target="_blank" style="color:#3498db">فتح</a></td><td><a href="${auth.links[i].corr}" target="_blank" style="color:#3498db">فتح</a></td></tr>`;
+        for(let i in auth.surveys) hS += `<div class="survey-text"><strong>${auth.surveys[i].name}:</strong><br>${auth.surveys[i].text}</div>`;
+
+        document.querySelector("#v_courses tbody").innerHTML = hC;
+        document.querySelector("#v_discord tbody").innerHTML = hD;
+        document.querySelector("#v_apps tbody").innerHTML = hA;
+        document.querySelector("#v_links tbody").innerHTML = hL;
         document.getElementById('view_surveys').innerHTML = hS;
     });
 </script>
