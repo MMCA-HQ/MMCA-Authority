@@ -85,16 +85,36 @@
 
         .btn-edit { background: var(--blue); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
         .btn-del { background: var(--error); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
-        .btn-save { background: var(--green); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
+        .btn-points { background: var(--green); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; direction: rtl; }
         th { color: var(--gold); padding: 15px; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
         td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
+        /* Modal Style */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); overflow-y: auto; }
+        .modal-content { background: #14160f; margin: 2% auto; padding: 25px; border: 2px solid var(--gold); width: 85%; border-radius: 15px; }
+        .grid-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+        .point-item { background: #000; padding: 10px; border: 1px solid var(--border); border-radius: 8px; }
+        .point-item label { display: block; margin-bottom: 8px; color: var(--gold); font-size: 0.8rem; }
+        .point-item input { width: 90%; }
+
         .section-red { border: 1px solid var(--error); }
     </style>
 </head>
 <body>
+
+<div id="pointsModal" class="modal">
+    <div class="modal-content">
+        <h2 id="m_title" style="justify-content: center;">| نظام خصم نقاط المتدرب</h2>
+        <p id="m_info" style="text-align: center; color: var(--blue); font-weight: bold;"></p>
+        <div class="grid-points" id="pointsFields"></div>
+        <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 20px;">
+            <button class="btn-gold" style="height: 50px; background: var(--green);" onclick="calculateAndSave()">اعتماد النتيجة النهائية</button>
+            <button class="btn-gold" style="height: 50px; background: var(--error);" onclick="closeModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
 
 <div class="container">
     <h1 style="text-align: center; color: var(--gold); margin-bottom: 50px;">نظام التحكم الأعلى | دولة مارفل</h1>
@@ -102,7 +122,7 @@
     <div class="panel">
         <h2>إدارة الشروط والضوابط</h2>
         <textarea id="rulesText" style="width: 100%; height: 100px; margin-bottom: 15px;" placeholder="اكتب الشروط هنا..."></textarea>
-        <button class="btn-gold" style="width: 100%; height: 50px;" onclick="saveRules()">تحديث الشروط</button>
+        <button class="btn-gold" style="width: 100%; height: 50px;" onclick="saveRules()">تحديث الشروط (اعتماد)</button>
     </div>
 
     <div class="panel">
@@ -112,7 +132,7 @@
             <input type="text" id="c_p1" placeholder="الفترة 1">
             <input type="text" id="c_p2" placeholder="الفترة 2">
             <input type="hidden" id="edit_c_id">
-            <button class="btn-gold" id="btn_c" onclick="addOrUpdateCourse()">حفظ جديد</button>
+            <button class="btn-gold" id="btn_c" onclick="addOrUpdateCourse()">اعتماد جديد</button>
         </div>
         <table>
             <thead><tr><th>التحكم</th><th>فترة 2</th><th>فترة 1</th><th>الدورة</th></tr></thead>
@@ -126,7 +146,7 @@
             <input type="text" id="e_name" placeholder="اسم الدورة">
             <input type="text" id="e_url" placeholder="رابط الاختبار">
             <input type="hidden" id="edit_e_id">
-            <button class="btn-gold" id="btn_e" onclick="addItem('exams', 'e_name', 'e_url', 'edit_e_id', 'btn_e')">حفظ جديد</button>
+            <button class="btn-gold" id="btn_e" onclick="addItem('exams', 'e_name', 'e_url', 'edit_e_id', 'btn_e')">اعتماد جديد</button>
         </div>
         <table><thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead><tbody id="t_exams"></tbody></table>
     </div>
@@ -137,7 +157,7 @@
             <input type="text" id="co_name" placeholder="اسم الدورة">
             <input type="text" id="co_url" placeholder="رابط التصحيح">
             <input type="hidden" id="edit_co_id">
-            <button class="btn-gold" id="btn_co" onclick="addItem('correction', 'co_name', 'co_url', 'edit_co_id', 'btn_co')">حفظ جديد</button>
+            <button class="btn-gold" id="btn_co" onclick="addItem('correction', 'co_name', 'co_url', 'edit_co_id', 'btn_co')">اعتماد جديد</button>
         </div>
         <table><thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead><tbody id="t_correction"></tbody></table>
     </div>
@@ -148,7 +168,7 @@
             <input type="text" id="s_name" placeholder="اسم الدورة">
             <input type="text" id="s_url" placeholder="رابط الاستبيان">
             <input type="hidden" id="edit_s_id">
-            <button class="btn-gold" id="btn_s" onclick="addItem('surveys', 's_name', 's_url', 'edit_s_id', 'btn_s')">حفظ جديد</button>
+            <button class="btn-gold" id="btn_s" onclick="addItem('surveys', 's_name', 's_url', 'edit_s_id', 'btn_s')">اعتماد جديد</button>
         </div>
         <table><thead><tr><th>التحكم</th><th>الرابط</th><th>الدورة</th></tr></thead><tbody id="t_surveys"></tbody></table>
     </div>
@@ -159,7 +179,7 @@
             <input type="text" id="app_name" placeholder="الاسم">
             <input type="text" id="app_code" placeholder="الكود">
             <input type="hidden" id="edit_app_id">
-            <button class="btn-gold" id="btn_app" onclick="addOrUpdateApp()">إضافة عضو يدوي</button>
+            <button class="btn-gold" id="btn_app" onclick="addOrUpdateApp()">اعتماد عضو يدوي</button>
         </div>
         <table>
             <thead>
@@ -167,7 +187,7 @@
                     <th>الاسم</th>
                     <th>الكود</th>
                     <th>حالة القبول</th>
-                    <th>حالة النتائج</th>
+                    <th>النتائج والاجتياز</th>
                     <th>الإجراء النهائي</th>
                 </tr>
             </thead>
@@ -186,8 +206,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 3. وظائف الحفظ
-    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value).then(()=>alert("تم التحديث")); }
+    // إعدادات نظام النقاط
+    const CRITERIA = [
+        "المفاهيم الاساسية", "المهارات الميدانية", "التدريب", "تمرير البلاغات", 
+        "البروتوكولات العسكرية", "القفز المظلي", "تجميع بعد الهبوط", "قبل الإقلاع", 
+        "التوجه نحو نقطة الإسقاط", "نقطة الإسقاط", "قيادة الموكب", "تنظيم السيناريوهات", "الأسلوب والانضباط"
+    ];
+    let currentAppId = null;
+
+    // 3. وظائف الإدارة
+    function saveRules() { db.ref('authority_data/rules').set(document.getElementById('rulesText').value).then(()=>alert("تم الاعتماد")); }
 
     function addOrUpdateCourse() {
         const id = document.getElementById('edit_c_id').value;
@@ -203,21 +231,16 @@
         resetF(['edit_app_id','app_name','app_code'], 'btn_app');
     }
 
-    // وظائف التحكم المباشر بالحالات
     function updateAppStatus(id, field, val) {
         let update = {};
         update[field] = val;
         db.ref('applications/' + id).update(update);
     }
 
-    function removeAppField(id, field) {
-        db.ref('applications/' + id + '/' + field).remove();
-    }
+    function removeAppField(id, field) { db.ref('applications/' + id + '/' + field).remove(); }
 
     function deleteApp(id) {
-        if(confirm("هل أنت متأكد من حذف هذا المتقدم نهائياً؟")) {
-            db.ref('applications/' + id).remove();
-        }
+        if(confirm("هل أنت متأكد من حذف هذا المتقدم نهائياً؟")) { db.ref('applications/' + id).remove(); }
     }
 
     function addItem(path, ni, ui, hi, bi) {
@@ -227,7 +250,39 @@
         resetF([hi, ni, ui], bi);
     }
 
-    function resetF(ids, b) { ids.forEach(id=>document.getElementById(id).value=""); document.getElementById(b).innerText="حفظ جديد"; }
+    function resetF(ids, b) { ids.forEach(id=>document.getElementById(id).value=""); document.getElementById(b).innerText="اعتماد جديد"; }
+
+    // وظائف نظام الخصم
+    function openPointsSystem(id, name) {
+        currentAppId = id;
+        document.getElementById('m_info').innerText = `رصد درجات المتدرب: ${name}`;
+        let html = "";
+        CRITERIA.forEach(c => {
+            html += `<div class="point-item">
+                <label>${c}</label>
+                <input type="number" step="0.1" min="0" max="5" class="point-input-head" value="5">
+            </div>`;
+        });
+        document.getElementById('pointsFields').innerHTML = html;
+        document.getElementById('pointsModal').style.display = "block";
+    }
+
+    function closeModal() { document.getElementById('pointsModal').style.display = "none"; }
+
+    function calculateAndSave() {
+        let inputs = document.querySelectorAll('.point-input-head');
+        let total = 0;
+        inputs.forEach(i => total += parseFloat(i.value || 0));
+        let finalScore = (total / CRITERIA.length).toFixed(1);
+        let result = finalScore >= 3.5 ? "ناجح" : "راسب";
+        
+        if(confirm(`المعدل: ${finalScore} \n النتيجة: ${result} \n اعتماد الرصد النهائي؟`)) {
+            db.ref('applications/' + currentAppId).update({ pass: result, score: finalScore }).then(() => {
+                alert("تم الاعتماد بنجاح");
+                closeModal();
+            });
+        }
+    }
 
     // 4. عرض البيانات (المزامنة)
     db.ref().on('value', snap => {
@@ -235,11 +290,9 @@
         const auth = d.authority_data || {};
         document.getElementById('rulesText').value = auth.rules || "";
 
-        // الدورات
         let hC = ""; for(let i in auth.courses) { let c = auth.courses[i]; hC += `<tr><td><button class="btn-edit" onclick="setEC('${i}','${c.name}','${c.p1}','${c.p2}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/courses/${i}').remove()">حذف</button></td><td>${c.p2}</td><td>${c.p1}</td><td>${c.name}</td></tr>`; }
         document.getElementById('t_courses').innerHTML = hC;
 
-        // المتقدمين (الجدول المعدل)
         let hA = ""; 
         for(let i in d.applications) { 
             let a = d.applications[i]; 
@@ -252,24 +305,20 @@
                         <option value="مقبول" ${a.status === 'مقبول' ? 'selected' : ''}>مقبول</option>
                         <option value="مرفوض" ${a.status === 'مرفوض' ? 'selected' : ''}>مرفوض</option>
                     </select>
-                    <button class="btn-del" style="margin-top:5px" onclick="removeAppField('${i}', 'status')">حذف الحالة</button>
                 </td>
                 <td>
-                    <select onchange="updateAppStatus('${i}', 'pass', this.value)">
-                        <option value="" ${!a.pass ? 'selected' : ''}>-- لا يوجد --</option>
-                        <option value="ناجح" ${a.pass === 'ناجح' ? 'selected' : ''}>ناجح</option>
-                        <option value="راسب" ${a.pass === 'راسب' ? 'selected' : ''}>راسب</option>
-                    </select>
+                    <button class="btn-points" onclick="openPointsSystem('${i}', '${a.name}')">رصد النتائج (نقاط)</button>
+                    <div style="margin-top:5px; font-size:0.8rem; color:var(--gold)">${a.pass ? a.pass + ' (' + a.score + ')' : 'لم يتم الرصد'}</div>
                     <button class="btn-del" style="margin-top:5px" onclick="removeAppField('${i}', 'pass')">حذف النتيجة</button>
                 </td>
                 <td>
+                    <button class="btn-edit" onclick="setEA('${i}','${a.name}','${a.code}')">تعديل</button>
                     <button class="btn-del" onclick="deleteApp('${i}')">حذف نهائي</button>
                 </td>
             </tr>`; 
         }
         document.getElementById('t_apps').innerHTML = hA;
 
-        // الروابط والاستبيانات
         const sec = { exams: 't_exams', correction: 't_correction', surveys: 't_surveys' };
         for(let s in sec) {
             let h = ""; for(let i in auth[s]) { let it = auth[s][i]; h += `<tr><td><button class="btn-edit" onclick="setEI('${s}','${i}','${it.course}','${it.url}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/${s}/${i}').remove()">حذف</button></td><td style="color:var(--gold); font-size:0.8rem;">${it.url}</td><td>${it.course}</td></tr>`; }
@@ -277,11 +326,11 @@
         }
     });
 
-    // 5. تعبئة بيانات التعديل
-    function setEC(id,n,p1,p2) { document.getElementById('edit_c_id').value=id; document.getElementById('c_name').value=n; document.getElementById('c_p1').value=p1; document.getElementById('c_p2').value=p2; document.getElementById('btn_c').innerText="تحديث"; }
+    function setEC(id,n,p1,p2) { document.getElementById('edit_c_id').value=id; document.getElementById('c_name').value=n; document.getElementById('c_p1').value=p1; document.getElementById('c_p2').value=p2; document.getElementById('btn_c').innerText="تحديث (اعتماد)"; }
+    function setEA(id,n,c) { document.getElementById('edit_app_id').value=id; document.getElementById('app_name').value=n; document.getElementById('app_code').value=c; document.getElementById('btn_app').innerText="تحديث (اعتماد)"; }
     function setEI(s,id,n,u) {
         const m = { exams: ['edit_e_id','e_name','e_url','btn_e'], correction: ['edit_co_id','co_name','co_url','btn_co'], surveys: ['edit_s_id','s_name','s_url','btn_s'] };
-        document.getElementById(m[s][0]).value=id; document.getElementById(m[s][1]).value=n; document.getElementById(m[s][2]).value=u; document.getElementById(m[s][3]).innerText="تحديث";
+        document.getElementById(m[s][0]).value=id; document.getElementById(m[s][1]).value=n; document.getElementById(m[s][2]).value=u; document.getElementById(m[s][3]).innerText="تحديث (اعتماد)";
     }
 </script>
 </body>
