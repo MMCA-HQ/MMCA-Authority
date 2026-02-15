@@ -12,7 +12,6 @@
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
         
-        /* Modal Style - نافذة نظام الخصم */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); overflow-y: auto; }
         .modal-content { background: #14160f; margin: 5% auto; padding: 20px; border: 2px solid var(--gold); width: 80%; border-radius: 10px; }
         .grid-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
@@ -22,6 +21,7 @@
 
         .discord-user { display: flex; align-items: center; gap: 10px; justify-content: center; }
         .discord-user img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--gold); }
+        .role-badge { background: #1a1d12; border: 1px solid var(--army); color: #ddd; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin: 2px; display: inline-block; }
         .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .btn-accept { background: #2ecc71; color: #000; }
         .btn-reject { background: #e74c3c; color: #fff; }
@@ -37,8 +37,7 @@
         <div class="modal-content">
             <h2 id="m_title">| نظام خصم نقاط الدورة</h2>
             <p id="m_info" style="color: #bbb;"></p>
-            <div class="grid-points" id="pointsFields">
-                </div>
+            <div class="grid-points" id="pointsFields"></div>
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--army);">
                 <button class="btn-action btn-accept" style="padding: 15px 40px;" onclick="calculateAndSave()">رصد النتيجة النهائية</button>
                 <button class="btn-action btn-reject" onclick="closeModal()">إلغاء</button>
@@ -105,9 +104,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const ROLE_MAP = { "1340051888401350707": "طالب دورة", "1126997235209707621": "مواطن", "1126997235209707622": "عسكري" };
+        // القاموس (أضف الرتب الجديدة هنا)
+        const ROLE_MAP = { 
+            "1340051888401350707": "طالب دورة", 
+            "1126997235209707621": "مواطن", 
+            "1126997235209707622": "عسكري" 
+        };
         
-        // إعدادات نظام النقاط
         const CRITERIA = [
             "المفاهيم الاساسية", "المهارات الميدانية", "التدريب", "تمرير البلاغات", 
             "البروتوكولات العسكرية", "القفز المظلي", "تجميع بعد الهبوط", "قبل الإقلاع", 
@@ -120,7 +123,7 @@
             currentAppId = id;
             document.getElementById('m_info').innerText = `المتدرب: ${name} | الدورة: ${course}`;
             let html = "";
-            CRITERIA.forEach((c, index) => {
+            CRITERIA.forEach((c) => {
                 html += `<div class="point-item">
                     <label>${c}</label>
                     <input type="number" step="0.1" min="0" max="5" class="point-input" value="5">
@@ -163,7 +166,17 @@
                 let a = apps[id];
                 hBasic += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button><button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button></td></tr>`;
 
-                let rolesHtml = (a.roles || []).map(rId => `<span class="role-badge">${ROLE_MAP[rId] || rId}</span>`).join('') || '---';
+                // --- منطق عرض الرتب المطور ---
+                let rolesHtml = "";
+                if (a.roles && Array.isArray(a.roles)) {
+                    rolesHtml = a.roles.map(rId => {
+                        let name = ROLE_MAP[rId] || `رتبة: ${rId}`; 
+                        return `<span class="role-badge">${name}</span>`;
+                    }).join('');
+                } else {
+                    rolesHtml = '<span style="color:#555">---</span>';
+                }
+
                 hAcc += `<tr><td><div class="discord-user"><img src="${a.avatar || ''}"><span>${a.name}</span></div></td><td>${a.code}</td><td>${a.discord_id || '---'}</td><td>${rolesHtml}</td></tr>`;
 
                 if(a.status === 'مقبول') {
