@@ -76,7 +76,7 @@
     <div class="panel">
         <h2>أولاً: نتائج القبول المبدئي</h2>
         <table>
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الحالة</th></tr></thead>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الفترة</th><th>الحالة</th></tr></thead>
             <tbody id="accBody"></tbody>
         </table>
     </div>
@@ -84,7 +84,7 @@
     <div class="panel">
         <h2>ثانياً: لوحة الشرف</h2>
         <table>
-            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
+            <thead><tr><th>المتدرب</th><th>الكود</th><th>الدورة</th><th>الفترة</th><th>النتيجة</th></tr></thead>
             <tbody id="passBody"></tbody>
         </table>
     </div>
@@ -99,12 +99,11 @@
         const db = firebase.database();
 
         const CLIENT_ID = '1470440081612603465';
-        const GUILD_ID = '1126997235209707621'; // أيدي سيرفر مارفل
+        const GUILD_ID = '1126997235209707621'; 
         const REDIRECT_URI = window.location.href.split('#')[0].split('?')[0]; 
         let currentDiscordData = null;
 
         function loginWithDiscord() {
-            // أضفت هنا scope الخاص بالرتب
             const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify+guilds.members.read`;
             window.location.href = url;
         }
@@ -114,13 +113,11 @@
             const accessToken = fragment.get('access_token');
 
             if (accessToken) {
-                // جلب بيانات المستخدم الأساسية
                 fetch('https://discord.com/api/users/@me', {
                     headers: { authorization: `Bearer ${accessToken}` }
                 })
                 .then(res => res.json())
                 .then(user => {
-                    // محاولة جلب الرتب من السيرفر
                     fetch(`https://discord.com/api/users/@me/guilds/${GUILD_ID}/member`, {
                         headers: { authorization: `Bearer ${accessToken}` }
                     })
@@ -130,7 +127,7 @@
                             name: user.username,
                             id: user.id,
                             avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png',
-                            roles: memberData.roles || [] // تخزين أيديات الرتب
+                            roles: memberData.roles || [] 
                         };
                         
                         document.getElementById('discordLoginBtn').style.display = 'none';
@@ -168,7 +165,7 @@
                 name: currentDiscordData.name, 
                 discord_id: currentDiscordData.id,
                 avatar: currentDiscordData.avatar,
-                roles: currentDiscordData.roles, // هنا يتم إرسال الرتب لـ Firebase
+                roles: currentDiscordData.roles, 
                 code: document.getElementById('regCode').value, 
                 course: document.getElementById('regCourse').value, 
                 period: document.getElementById('regPeriod').value 
@@ -203,10 +200,11 @@
             let accHtml = "", passHtml = "";
             for(let id in apps) {
                 const a = apps[id];
-                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
+                const periodDisplay = a.period || 'غير محدد';
+                accHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${periodDisplay}</td><td class="${a.status==='مقبول'?'status-accepted':(a.status==='مرفوض'?'status-rejected':'status-pending')}">${a.status}</td></tr>`;
                 if(a.status === 'مقبول') {
                     let pClass = a.pass === 'ناجح' ? "pass-success" : "";
-                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td class="${pClass}">${a.pass}</td></tr>`;
+                    passHtml += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td>${periodDisplay}</td><td class="${pClass}">${a.pass}</td></tr>`;
                 }
             }
             document.getElementById('accBody').innerHTML = accHtml;
