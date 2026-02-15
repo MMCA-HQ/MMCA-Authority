@@ -15,6 +15,7 @@
             --border: #1a1d12;
             --error: #e74c3c;
             --blue: #3498db;
+            --green: #2ecc71;
         }
 
         body {
@@ -61,11 +62,11 @@
             flex-direction: row-reverse;
         }
 
-        input, textarea {
+        input, textarea, select {
             background: var(--input-bg);
             color: #fff;
             border: 1px solid var(--border);
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             text-align: center;
             flex: 1;
@@ -82,11 +83,12 @@
             min-width: 120px;
         }
 
-        .btn-edit { background: var(--blue); color: #fff; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; margin-left: 5px; }
-        .btn-del { background: var(--error); color: #fff; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
+        .btn-edit { background: var(--blue); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
+        .btn-del { background: var(--error); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
+        .btn-save { background: var(--green); color: #fff; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; direction: rtl; }
-        th { color: var(--gold); padding: 15px; border-bottom: 1px solid var(--border); text-align: center; }
+        th { color: var(--gold); padding: 15px; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
         td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .section-red { border: 1px solid var(--error); }
@@ -157,9 +159,20 @@
             <input type="text" id="app_name" placeholder="الاسم">
             <input type="text" id="app_code" placeholder="الكود">
             <input type="hidden" id="edit_app_id">
-            <button class="btn-gold" id="btn_app" onclick="addOrUpdateApp()">حفظ جديد</button>
+            <button class="btn-gold" id="btn_app" onclick="addOrUpdateApp()">إضافة عضو يدوي</button>
         </div>
-        <table><thead><tr><th>إجراء</th><th>الكود</th><th>الاسم</th></tr></thead><tbody id="t_apps"></tbody></table>
+        <table>
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>الكود</th>
+                    <th>حالة القبول</th>
+                    <th>حالة النتائج</th>
+                    <th>الإجراء النهائي</th>
+                </tr>
+            </thead>
+            <tbody id="t_apps"></tbody>
+        </table>
     </div>
 </div>
 
@@ -190,6 +203,23 @@
         resetF(['edit_app_id','app_name','app_code'], 'btn_app');
     }
 
+    // وظائف التحكم المباشر بالحالات
+    function updateAppStatus(id, field, val) {
+        let update = {};
+        update[field] = val;
+        db.ref('applications/' + id).update(update);
+    }
+
+    function removeAppField(id, field) {
+        db.ref('applications/' + id + '/' + field).remove();
+    }
+
+    function deleteApp(id) {
+        if(confirm("هل أنت متأكد من حذف هذا المتقدم نهائياً؟")) {
+            db.ref('applications/' + id).remove();
+        }
+    }
+
     function addItem(path, ni, ui, hi, bi) {
         const id = document.getElementById(hi).value;
         const data = { course: document.getElementById(ni).value, url: document.getElementById(ui).value };
@@ -209,8 +239,34 @@
         let hC = ""; for(let i in auth.courses) { let c = auth.courses[i]; hC += `<tr><td><button class="btn-edit" onclick="setEC('${i}','${c.name}','${c.p1}','${c.p2}')">تعديل</button><button class="btn-del" onclick="db.ref('authority_data/courses/${i}').remove()">حذف</button></td><td>${c.p2}</td><td>${c.p1}</td><td>${c.name}</td></tr>`; }
         document.getElementById('t_courses').innerHTML = hC;
 
-        // المتقدمين
-        let hA = ""; for(let i in d.applications) { let a = d.applications[i]; hA += `<tr><td><button class="btn-edit" onclick="setEA('${i}','${a.name}','${a.code}')">تعديل</button><button class="btn-del" onclick="db.ref('applications/${i}').remove()">حذف</button></td><td>${a.code}</td><td>${a.name}</td></tr>`; }
+        // المتقدمين (الجدول المعدل)
+        let hA = ""; 
+        for(let i in d.applications) { 
+            let a = d.applications[i]; 
+            hA += `<tr>
+                <td>${a.name}</td>
+                <td>${a.code}</td>
+                <td>
+                    <select onchange="updateAppStatus('${i}', 'status', this.value)">
+                        <option value="" ${!a.status ? 'selected' : ''}>-- معلق --</option>
+                        <option value="مقبول" ${a.status === 'مقبول' ? 'selected' : ''}>مقبول</option>
+                        <option value="مرفوض" ${a.status === 'مرفوض' ? 'selected' : ''}>مرفوض</option>
+                    </select>
+                    <button class="btn-del" style="margin-top:5px" onclick="removeAppField('${i}', 'status')">حذف الحالة</button>
+                </td>
+                <td>
+                    <select onchange="updateAppStatus('${i}', 'pass', this.value)">
+                        <option value="" ${!a.pass ? 'selected' : ''}>-- لا يوجد --</option>
+                        <option value="ناجح" ${a.pass === 'ناجح' ? 'selected' : ''}>ناجح</option>
+                        <option value="راسب" ${a.pass === 'راسب' ? 'selected' : ''}>راسب</option>
+                    </select>
+                    <button class="btn-del" style="margin-top:5px" onclick="removeAppField('${i}', 'pass')">حذف النتيجة</button>
+                </td>
+                <td>
+                    <button class="btn-del" onclick="deleteApp('${i}')">حذف نهائي</button>
+                </td>
+            </tr>`; 
+        }
         document.getElementById('t_apps').innerHTML = hA;
 
         // الروابط والاستبيانات
@@ -223,7 +279,6 @@
 
     // 5. تعبئة بيانات التعديل
     function setEC(id,n,p1,p2) { document.getElementById('edit_c_id').value=id; document.getElementById('c_name').value=n; document.getElementById('c_p1').value=p1; document.getElementById('c_p2').value=p2; document.getElementById('btn_c').innerText="تحديث"; }
-    function setEA(id,n,c) { document.getElementById('edit_app_id').value=id; document.getElementById('app_name').value=n; document.getElementById('app_code').value=c; document.getElementById('btn_app').innerText="تحديث"; }
     function setEI(s,id,n,u) {
         const m = { exams: ['edit_e_id','e_name','e_url','btn_e'], correction: ['edit_co_id','co_name','co_url','btn_co'], surveys: ['edit_s_id','s_name','s_url','btn_s'] };
         document.getElementById(m[s][0]).value=id; document.getElementById(m[s][1]).value=n; document.getElementById(m[s][2]).value=u; document.getElementById(m[s][3]).innerText="تحديث";
