@@ -7,17 +7,16 @@
         :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 5px; }
-        .sub-title { color: #888; font-size: 0.9rem; margin-bottom: 15px; display: block; padding-right: 15px; }
+        h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; background: #000; margin-bottom: 10px; }
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
         
         .discord-user { display: flex; align-items: center; gap: 10px; justify-content: center; }
         .discord-user img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--gold); }
-        .discord-id { font-size: 0.75rem; color: #888; font-family: monospace; }
+        .discord-id { font-size: 0.75rem; color: #888; font-family: monospace; display: block; }
         
-        .role-badge { background: #2c2f33; border: 1px solid var(--gold); color: var(--gold); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin: 1px; display: inline-block; }
+        .role-badge { background: #2c2f33; border: 1px solid var(--gold); color: var(--gold); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin: 2px; display: inline-block; }
 
         .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .btn-accept { background: #2ecc71; color: #000; }
@@ -40,7 +39,21 @@
 
     <div class="panel">
         <h2>| إدارة طلبات القبول</h2>
-        <span class="sub-title">(تحقق الديسكورد)</span>
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم المتقدم</th>
+                    <th>الكود</th>
+                    <th>الدورة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="admBasicApps"></tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>| نظام التحقق الديسكورد</h2>
         <table>
             <thead>
                 <tr>
@@ -48,7 +61,6 @@
                     <th>الكود</th>
                     <th>الايدي</th>
                     <th>الرولات</th>
-                    <th>الإجراء</th>
                 </tr>
             </thead>
             <tbody id="admAcc"></tbody>
@@ -95,7 +107,7 @@
 
         db.ref().on('value', snap => {
             const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
-            let hSched="", hAcc="", hPass="", hEx="", hCo="", hSur="";
+            let hSched="", hBasic="", hAcc="", hPass="", hEx="", hCo="", hSur="";
             
             for(let i in auth.courses) hSched += `<tr><td>${auth.courses[i].name}</td><td>${auth.courses[i].p1}</td><td>${auth.courses[i].p2}</td></tr>`;
             document.getElementById('schedBody').innerHTML = hSched;
@@ -104,9 +116,21 @@
                 let a = apps[id];
                 let avatar = a.avatar || 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png';
                 
+                // جدول الإدارة
+                hBasic += `<tr>
+                    <td>${a.name}</td>
+                    <td>${a.code}</td>
+                    <td>${a.course}</td>
+                    <td>
+                        <button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button>
+                        <button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button>
+                    </td>
+                </tr>`;
+
+                // جدول التحقق المطلوب
                 let rolesHtml = "";
                 if(a.roles && Array.isArray(a.roles)) {
-                    rolesHtml = a.roles.map(r => `<span class="role-badge">${r}</span>`).join(' ');
+                    rolesHtml = a.roles.map(r => `<span class="role-badge">${r}</span>`).join('');
                 } else {
                     rolesHtml = '<span style="color:#555">---</span>';
                 }
@@ -121,16 +145,13 @@
                     <td>${a.code}</td>
                     <td><span class="discord-id">${a.discord_id || '---'}</span></td>
                     <td>${rolesHtml}</td>
-                    <td>
-                        <button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button>
-                        <button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button>
-                    </td>
                 </tr>`;
 
                 if(a.status === 'مقبول') {
                     hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" style="background:#3498db" onclick="setPass('${id}','ناجح')">ناجح</button><button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button></td></tr>`;
                 }
             }
+            document.getElementById('admBasicApps').innerHTML = hBasic;
             document.getElementById('admAcc').innerHTML = hAcc;
             document.getElementById('admPass').innerHTML = hPass;
 
