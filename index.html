@@ -11,7 +11,6 @@
         label { display: block; margin-top: 10px; color: var(--gold); font-size: 0.9rem; }
         input, select { background: #000; color: #fff; border: 1px solid var(--army); padding: 12px; width: 100%; margin: 5px 0 15px 0; border-radius: 4px; box-sizing: border-box; }
         
-        /* تنسيق زر الديسكورد */
         .btn-discord { background: #5865F2; color: #fff; border: none; padding: 12px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: bold; margin-bottom: 20px; transition: 0.3s; }
         .btn-discord:hover { background: #4752c4; }
         .user-verified { background: #1a1d12; border: 1px solid #2ecc71; padding: 15px; border-radius: 4px; display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
@@ -95,47 +94,53 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        // إعدادات Firebase
         const firebaseConfig = { apiKey: "AIzaSyAALZ-v8wA_5mjUVSqW1uLXMwMkskpDaGM", databaseURL: "https://mmca-authority-default-rtdb.firebaseio.com" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // إعدادات ديسكورد
         const CLIENT_ID = '1470440081612603465';
+        const GUILD_ID = '1126997235209707621'; // أيدي سيرفر مارفل
         const REDIRECT_URI = window.location.href.split('#')[0].split('?')[0]; 
         let currentDiscordData = null;
 
         function loginWithDiscord() {
-            const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify`;
+            // أضفت هنا scope الخاص بالرتب
+            const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify+guilds.members.read`;
             window.location.href = url;
         }
 
-        // معالجة العودة من ديسكورد
         window.addEventListener('load', () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
 
             if (accessToken) {
+                // جلب بيانات المستخدم الأساسية
                 fetch('https://discord.com/api/users/@me', {
                     headers: { authorization: `Bearer ${accessToken}` }
                 })
                 .then(res => res.json())
                 .then(user => {
-                    currentDiscordData = {
-                        name: user.username,
-                        id: user.id,
-                        avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png'
-                    };
+                    // محاولة جلب الرتب من السيرفر
+                    fetch(`https://discord.com/api/users/@me/guilds/${GUILD_ID}/member`, {
+                        headers: { authorization: `Bearer ${accessToken}` }
+                    })
+                    .then(res => res.json())
+                    .then(memberData => {
+                        currentDiscordData = {
+                            name: user.username,
+                            id: user.id,
+                            avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png',
+                            roles: memberData.roles || [] // تخزين أيديات الرتب
+                        };
+                        
+                        document.getElementById('discordLoginBtn').style.display = 'none';
+                        document.getElementById('discordUserPanel').style.display = 'flex';
+                        document.getElementById('userAvatar').src = currentDiscordData.avatar;
+                        document.getElementById('discordName').innerText = "الاسم: " + currentDiscordData.name;
+                        document.getElementById('discordId').innerText = "ID: " + currentDiscordData.id;
+                        document.getElementById('regName').value = currentDiscordData.name;
+                    });
                     
-                    // تحديث الواجهة
-                    document.getElementById('discordLoginBtn').style.display = 'none';
-                    document.getElementById('discordUserPanel').style.display = 'flex';
-                    document.getElementById('userAvatar').src = currentDiscordData.avatar;
-                    document.getElementById('discordName').innerText = "الاسم: " + currentDiscordData.name;
-                    document.getElementById('discordId').innerText = "ID: " + currentDiscordData.id;
-                    document.getElementById('regName').value = currentDiscordData.name;
-                    
-                    // تنظيف الرابط
                     window.history.replaceState({}, document.title, window.location.pathname);
                 });
             }
@@ -163,6 +168,7 @@
                 name: currentDiscordData.name, 
                 discord_id: currentDiscordData.id,
                 avatar: currentDiscordData.avatar,
+                roles: currentDiscordData.roles, // هنا يتم إرسال الرتب لـ Firebase
                 code: document.getElementById('regCode').value, 
                 course: document.getElementById('regCourse').value, 
                 period: document.getElementById('regPeriod').value 
@@ -181,7 +187,6 @@
             });
         }
 
-        // المزامنة مع Firebase لعرض البيانات
         db.ref().on('value', snap => {
             const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
             document.getElementById('rulesDisplay').innerText = auth.rules || "لا توجد شروط";
