@@ -102,6 +102,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // --- قاموس ترجمة الرتب: ضع أيدي الرتبة واسمها هنا ليظهر في الجدول ---
+        const ROLE_MAP = {
+            "1340051888401350707": "طالب دورة",
+            "1126997235209707621": "مواطن",
+            "1126997235209707622": "عسكري",
+            // أضف أي أيدي آخر يظهر لك هنا بنفس الطريقة
+        };
+
         function setStatus(id, val) { db.ref('applications/' + id).update({ status: val }); }
         function setPass(id, val) { db.ref('applications/' + id).update({ pass: val }); }
 
@@ -116,7 +124,6 @@
                 let a = apps[id];
                 let avatar = a.avatar || 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png';
                 
-                // جدول الإدارة
                 hBasic += `<tr>
                     <td>${a.name}</td>
                     <td>${a.code}</td>
@@ -127,10 +134,13 @@
                     </td>
                 </tr>`;
 
-                // جدول التحقق المطلوب
+                // تحويل الأرقام إلى أسماء
                 let rolesHtml = "";
                 if(a.roles && Array.isArray(a.roles)) {
-                    rolesHtml = a.roles.map(r => `<span class="role-badge">${r}</span>`).join('');
+                    rolesHtml = a.roles.map(rId => {
+                        let name = ROLE_MAP[rId] || rId; // إذا لم يجد الاسم سيعرض الرقم
+                        return `<span class="role-badge">${name}</span>`;
+                    }).join('');
                 } else {
                     rolesHtml = '<span style="color:#555">---</span>';
                 }
