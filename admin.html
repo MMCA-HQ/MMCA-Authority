@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>لوحة المشرفين | دولة مارفل</title>
     <style>
-        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; }
+        :root { --army: #3d4921; --gold: #c5a059; --dark: #0b0c08; --blue: #3498db; }
         body { background: var(--dark); color: #fff; font-family: Tahoma; padding: 20px; display: none; }
         .panel { background: #14160f; border: 1px solid var(--army); padding: 15px; margin-bottom: 20px; border-radius: 5px; }
         h2 { color: var(--gold); border-right: 4px solid var(--gold); padding-right: 10px; margin-bottom: 15px; }
@@ -12,22 +12,39 @@
         th, td { border: 1px solid var(--army); padding: 12px; text-align: center; }
         th { background: #1a1d12; color: var(--gold); }
         
+        /* Modal Style - نافذة نظام الخصم */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); overflow-y: auto; }
+        .modal-content { background: #14160f; margin: 5% auto; padding: 20px; border: 2px solid var(--gold); width: 80%; border-radius: 10px; }
+        .grid-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .point-item { background: #000; padding: 10px; border: 1px solid var(--army); border-radius: 5px; }
+        .point-item label { display: block; margin-bottom: 5px; color: var(--gold); font-size: 0.8rem; }
+        .point-item input { width: 80%; background: #111; border: 1px solid var(--gold); color: #fff; padding: 5px; text-align: center; }
+
         .discord-user { display: flex; align-items: center; gap: 10px; justify-content: center; }
         .discord-user img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--gold); }
-        .discord-id { font-size: 0.75rem; color: #888; font-family: monospace; display: block; }
-        
-        .role-badge { background: #2c2f33; border: 1px solid var(--gold); color: var(--gold); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin: 2px; display: inline-block; }
-
         .btn-action { cursor: pointer; padding: 6px 12px; border: none; border-radius: 3px; font-weight: bold; margin: 2px; }
         .btn-accept { background: #2ecc71; color: #000; }
         .btn-reject { background: #e74c3c; color: #fff; }
+        .btn-points { background: var(--blue); color: #fff; }
         .link-btn { background: var(--gold); color: #000; padding: 10px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 5px; font-weight: bold; }
-        .survey-text { background: #000; border: 1px dashed var(--gold); padding: 10px; margin: 5px; color: #ddd; }
         .footer { margin-top: 50px; text-align: center; border-top: 1px solid var(--army); padding: 20px; }
     </style>
 </head>
 <body>
     <h1 style="text-align: center; color: var(--gold);">لوحة مشرفي الدورات</h1>
+
+    <div id="pointsModal" class="modal">
+        <div class="modal-content">
+            <h2 id="m_title">| نظام خصم نقاط الدورة</h2>
+            <p id="m_info" style="color: #bbb;"></p>
+            <div class="grid-points" id="pointsFields">
+                </div>
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--army);">
+                <button class="btn-action btn-accept" style="padding: 15px 40px;" onclick="calculateAndSave()">رصد النتيجة النهائية</button>
+                <button class="btn-action btn-reject" onclick="closeModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
     <div class="panel">
         <h2>| مواعيد الدورات العامة</h2>
@@ -40,14 +57,7 @@
     <div class="panel">
         <h2>| إدارة طلبات القبول</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>اسم المتقدم</th>
-                    <th>الكود</th>
-                    <th>الدورة</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
+            <thead><tr><th>اسم المتقدم</th><th>الكود</th><th>الدورة</th><th>الإجراء</th></tr></thead>
             <tbody id="admBasicApps"></tbody>
         </table>
     </div>
@@ -55,22 +65,15 @@
     <div class="panel">
         <h2>| نظام التحقق الديسكورد</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>المتقدم</th>
-                    <th>الكود</th>
-                    <th>الايدي</th>
-                    <th>الرولات</th>
-                </tr>
-            </thead>
+            <thead><tr><th>المتقدم</th><th>الكود</th><th>الايدي</th><th>الرولات</th></tr></thead>
             <tbody id="admAcc"></tbody>
         </table>
     </div>
 
     <div class="panel">
-        <h2>| رصد نتائج الاجتياز</h2>
+        <h2>| رصد نتائج الاجتياز (نظام النقاط)</h2>
         <table>
-            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>النتيجة</th></tr></thead>
+            <thead><tr><th>الاسم</th><th>الكود</th><th>الدورة</th><th>الرصد</th></tr></thead>
             <tbody id="admPass"></tbody>
         </table>
     </div>
@@ -102,16 +105,52 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- قاموس ترجمة الرتب: ضع أيدي الرتبة واسمها هنا ليظهر في الجدول ---
-        const ROLE_MAP = {
-            "1340051888401350707": "طالب دورة",
-            "1126997235209707621": "مواطن",
-            "1126997235209707622": "عسكري",
-            // أضف أي أيدي آخر يظهر لك هنا بنفس الطريقة
-        };
+        const ROLE_MAP = { "1340051888401350707": "طالب دورة", "1126997235209707621": "مواطن", "1126997235209707622": "عسكري" };
+        
+        // إعدادات نظام النقاط
+        const CRITERIA = [
+            "المفاهيم الاساسية", "المهارات الميدانية", "التدريب", "تمرير البلاغات", 
+            "البروتوكولات العسكرية", "القفز المظلي", "تجميع بعد الهبوط", "قبل الإقلاع", 
+            "التوجه نحو نقطة الإسقاط", "نقطة الإسقاط", "قيادة الموكب", "تنظيم السيناريوهات", "الأسلوب والانضباط"
+        ];
+
+        let currentAppId = null;
+
+        function openPointsSystem(id, name, course) {
+            currentAppId = id;
+            document.getElementById('m_info').innerText = `المتدرب: ${name} | الدورة: ${course}`;
+            let html = "";
+            CRITERIA.forEach((c, index) => {
+                html += `<div class="point-item">
+                    <label>${c}</label>
+                    <input type="number" step="0.1" min="0" max="5" class="point-input" value="5">
+                </div>`;
+            });
+            document.getElementById('pointsFields').innerHTML = html;
+            document.getElementById('pointsModal').style.display = "block";
+        }
+
+        function closeModal() { document.getElementById('pointsModal').style.display = "none"; }
+
+        function calculateAndSave() {
+            let inputs = document.querySelectorAll('.point-input');
+            let total = 0;
+            inputs.forEach(i => total += parseFloat(i.value || 0));
+            let finalScore = (total / CRITERIA.length).toFixed(1);
+            let result = finalScore >= 3.5 ? "ناجح" : "راسب";
+            
+            if(confirm(`المعدل النهائي: ${finalScore} من 5 \n النتيجة: ${result} \n هل تريد الرصد؟`)) {
+                db.ref('applications/' + currentAppId).update({ 
+                    pass: result,
+                    score: finalScore 
+                }).then(() => {
+                    alert("تم الرصد بنجاح");
+                    closeModal();
+                });
+            }
+        }
 
         function setStatus(id, val) { db.ref('applications/' + id).update({ status: val }); }
-        function setPass(id, val) { db.ref('applications/' + id).update({ pass: val }); }
 
         db.ref().on('value', snap => {
             const data = snap.val() || {}; const auth = data.authority_data || {}; const apps = data.applications || {};
@@ -122,43 +161,14 @@
 
             for(let id in apps) {
                 let a = apps[id];
-                let avatar = a.avatar || 'https://discord.com/assets/f78426a064bc9dd2484751927388427.png';
-                
-                hBasic += `<tr>
-                    <td>${a.name}</td>
-                    <td>${a.code}</td>
-                    <td>${a.course}</td>
-                    <td>
-                        <button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button>
-                        <button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button>
-                    </td>
-                </tr>`;
+                hBasic += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" onclick="setStatus('${id}','مقبول')">قبول</button><button class="btn-action btn-reject" onclick="setStatus('${id}','مرفوض')">رفض</button></td></tr>`;
 
-                // تحويل الأرقام إلى أسماء
-                let rolesHtml = "";
-                if(a.roles && Array.isArray(a.roles)) {
-                    rolesHtml = a.roles.map(rId => {
-                        let name = ROLE_MAP[rId] || rId; // إذا لم يجد الاسم سيعرض الرقم
-                        return `<span class="role-badge">${name}</span>`;
-                    }).join('');
-                } else {
-                    rolesHtml = '<span style="color:#555">---</span>';
-                }
-
-                hAcc += `<tr>
-                    <td>
-                        <div class="discord-user">
-                            <img src="${avatar}">
-                            <span>${a.name}</span>
-                        </div>
-                    </td>
-                    <td>${a.code}</td>
-                    <td><span class="discord-id">${a.discord_id || '---'}</span></td>
-                    <td>${rolesHtml}</td>
-                </tr>`;
+                let rolesHtml = (a.roles || []).map(rId => `<span class="role-badge">${ROLE_MAP[rId] || rId}</span>`).join('') || '---';
+                hAcc += `<tr><td><div class="discord-user"><img src="${a.avatar || ''}"><span>${a.name}</span></div></td><td>${a.code}</td><td>${a.discord_id || '---'}</td><td>${rolesHtml}</td></tr>`;
 
                 if(a.status === 'مقبول') {
-                    hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-accept" style="background:#3498db" onclick="setPass('${id}','ناجح')">ناجح</button><button class="btn-action btn-reject" onclick="setPass('${id}','راسب')">راسب</button></td></tr>`;
+                    let resLabel = a.pass ? `<b style="color:var(--gold)">[${a.pass} - ${a.score || ''}]</b>` : "لم يرصد";
+                    hPass += `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.course}</td><td><button class="btn-action btn-points" onclick="openPointsSystem('${id}','${a.name}','${a.course}')">فتح نظام الخصم والرصد</button> ${resLabel}</td></tr>`;
                 }
             }
             document.getElementById('admBasicApps').innerHTML = hBasic;
@@ -167,10 +177,8 @@
 
             for(let i in auth.exams) hEx += `<a href="${auth.exams[i].url}" class="link-btn" target="_blank">${auth.exams[i].course}</a>`;
             document.getElementById('examsLinks').innerHTML = hEx;
-
             for(let i in auth.correction) hCo += `<a href="${auth.correction[i].url}" class="link-btn" style="background:#3498db" target="_blank">${auth.correction[i].course}</a>`;
             document.getElementById('corrLinks').innerHTML = hCo;
-
             for(let i in auth.surveys) hSur += `<div class="survey-text"><b>${auth.surveys[i].course}:</b><p>${auth.surveys[i].url}</p></div>`;
             document.getElementById('surveyTexts').innerHTML = hSur;
         });
